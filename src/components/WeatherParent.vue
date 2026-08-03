@@ -3,6 +3,7 @@ import { ref, computed, watch, watchEffect } from 'vue'
 import BaseDashboardCard from './BaseDashboardCard.vue'
 import SearchBar from './SearchBar.vue'
 import WeatherCard from './WeatherCard.vue'
+import { getSubjectParticle } from '../utils/josa.js'
 
 const weatherList = ref([
   { id: 'city_01', name: '서울', temp: 28, status: '맑음' },
@@ -36,9 +37,9 @@ const filteredWeatherList = computed(() => {
 })
 
 const statusMessage = computed(() => {
-  return selectedCityInfo.value
-    ? `${selectedCityInfo.value.name}이 선택되었습니다.`
-    : '카드를 클릭하거나 검색해 보세요.'
+  if (!selectedCityInfo.value) return '카드를 클릭하거나 검색해 보세요.'
+  const { name } = selectedCityInfo.value
+  return `${name}${getSubjectParticle(name)} 선택되었습니다.`
 })
 
 watch(selectedCityInfo, (newCity) => {
@@ -70,7 +71,7 @@ function handleClickDetail(city) {
   <div class="page">
     <header class="page-header">
       <span class="page-header__badge"></span>
-      <h1>🌤️ 과제 2: 날씨 (컴포지션)</h1>
+      <h1>과제 2: 날씨 (컴포지션)</h1>
     </header>
 
     <main class="dashboard">
