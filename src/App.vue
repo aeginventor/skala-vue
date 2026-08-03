@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, watch, watchEffect } from 'vue'
 
 const weatherList = ref([
   { id: 'city_01', name: '서울', temp: 28, status: '맑음' },
@@ -7,17 +7,37 @@ const weatherList = ref([
   { id: 'city_03', name: '부산', temp: 26, status: '구름' },
   { id: 'city_04', name: '제주', temp: 22, status: '맑음' },
 ])
-
 const searchQuery = ref('')
+const selectedCityInfo = ref(null)
 
-const selectedCityName = ref('')
+const filteredWeatherList = computed(() => {
+  const keyword = searchQuery.value.trim()
+  if (!keyword) return weatherList.value
+  return weatherList.value.filter((city) => city.name.includes(keyword))
+})
+
+const statusMessage = computed(() => {
+  return selectedCityInfo.value
+    ? `${selectedCityInfo.value.name}이 선택되었습니다.`
+    : '카드를 클릭하거나 검색해 보세요.'
+})
+
+watch(selectedCityInfo, (newCity) => {
+  console.log(`[watch 감지] 상태 바 문구가 업데이트되었습니다 -> "${statusMessage.value}"`, newCity)
+})
+
+watchEffect(() => {
+  console.log(
+    `[watchEffect 자동 호출] 현재 검색어 '${searchQuery.value}'에 매칭되는 도시를 필터링합니다.`,
+  )
+})
 
 function handleSearchInput(event) {
   searchQuery.value = event.target.value
 }
 
 function selectCard(city) {
-  selectedCityName.value = city.name
+  selectedCityInfo.value = city
 }
 
 function showDetail(city) {
@@ -32,13 +52,13 @@ function isHot(temp) {
 <template>
   <div class="page">
     <header class="page-header">
-      <span class="page-header__badge">2. Vue 문법</span>
-      <h1>🌤️ 과제 1: 날씨 (Mockup)</h1>
+      <span class="page-header__badge"></span>
+      <h1>과제 2: 날씨 (컴포지션)</h1>
     </header>
 
     <main class="dashboard">
-      <section class="card search-card">
-        <h2>🔍 도시 검색</h2>
+      <section class="card">
+        <h2>도시 검색</h2>
         <input
           class="search-input"
           type="text"
@@ -53,14 +73,18 @@ function isHot(temp) {
         </p>
       </section>
 
-      <section class="card list-card">
-        <h2>📍 지역별 날씨 현황</h2>
-        <ul class="weather-list">
+      <section class="card">
+        <h2>지역별 날씨 현황</h2>
+
+        <p v-if="filteredWeatherList.length === 0" class="empty-message">
+          검색어와 일치하는 도시가 없습니다.
+        </p>
+        <ul v-else class="weather-list">
           <li
-            v-for="city in weatherList"
+            v-for="city in filteredWeatherList"
             :key="city.id"
             class="weather-card"
-            :class="{ 'weather-card--active': selectedCityName === city.name }"
+            :class="{ 'weather-card--active': selectedCityInfo?.id === city.id }"
             @click="selectCard(city)"
           >
             <div class="weather-card__top">
@@ -77,10 +101,7 @@ function isHot(temp) {
         </ul>
       </section>
 
-      <footer class="status-bar">
-        <template v-if="selectedCityName">{{ selectedCityName }}이 선택되었습니다.</template>
-        <template v-else>카드를 클릭하거나 검색해 보세요.</template>
-      </footer>
+      <footer class="status-bar">{{ statusMessage }}</footer>
     </main>
   </div>
 </template>
@@ -93,22 +114,18 @@ function isHot(temp) {
   font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
   color: #1f2937;
 }
-
 .page-header {
   max-width: 520px;
   margin: 0 auto 20px;
 }
-
 .page-header__badge {
   font-size: 12px;
   color: #6b7280;
 }
-
 .page-header h1 {
   font-size: 22px;
   margin: 4px 0 0;
 }
-
 .dashboard {
   max-width: 520px;
   margin: 0 auto;
@@ -116,19 +133,16 @@ function isHot(temp) {
   flex-direction: column;
   gap: 16px;
 }
-
 .card {
   background: #fff;
   border-radius: 12px;
   padding: 18px 20px;
   box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
 }
-
 .card h2 {
   font-size: 15px;
   margin: 0 0 12px;
 }
-
 .search-input {
   width: 100%;
   box-sizing: border-box;
@@ -137,17 +151,14 @@ function isHot(temp) {
   border-radius: 8px;
   font-size: 14px;
 }
-
 .search-status {
   margin: 8px 0 0;
   font-size: 13px;
   color: #4b5563;
 }
-
 .search-status__placeholder {
   color: #9ca3af;
 }
-
 .weather-list {
   list-style: none;
   margin: 0;
@@ -156,7 +167,13 @@ function isHot(temp) {
   flex-direction: column;
   gap: 10px;
 }
-
+.empty-message {
+  margin: 0;
+  font-size: 13px;
+  color: #9ca3af;
+  text-align: center;
+  padding: 12px 0;
+}
 .weather-card {
   border: 1px solid #e5e7eb;
   border-radius: 10px;
@@ -166,35 +183,29 @@ function isHot(temp) {
     border-color 0.15s,
     background-color 0.15s;
 }
-
 .weather-card:hover {
   border-color: #93c5fd;
 }
-
 .weather-card--active {
   border-color: #3b82f6;
   background: #eff6ff;
 }
-
 .weather-card__top {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 8px;
 }
-
 .weather-card__title {
   font-weight: 600;
   font-size: 14px;
 }
-
 .weather-card__temp {
   margin: 4px 0 0;
   font-weight: 400;
   color: #4b5563;
   font-size: 13px;
 }
-
 .detail-btn {
   border: 1px solid #d1d5db;
   background: #fff;
@@ -203,28 +214,23 @@ function isHot(temp) {
   font-size: 12px;
   cursor: pointer;
 }
-
 .detail-btn:hover {
   background: #f3f4f6;
 }
-
 .badge {
   display: inline-block;
   font-size: 12px;
   padding: 4px 10px;
   border-radius: 999px;
 }
-
 .badge--hot {
   background: #fee2e2;
   color: #b91c1c;
 }
-
 .badge--cool {
   background: #dbeafe;
   color: #1d4ed8;
 }
-
 .status-bar {
   text-align: center;
   padding: 12px;
