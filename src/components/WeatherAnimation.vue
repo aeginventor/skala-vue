@@ -1,0 +1,311 @@
+<script setup>
+import { computed } from 'vue'
+import { getWeatherCategory } from '../utils/weatherIcon.js'
+
+/**
+ * WeatherAnimation
+ * - 원래는 상세 페이지 상단에 별도의 가로 배너로 넣으려 했는데, 그렇게 하면
+ *   그 아래 있는 hero 아이콘(원형 날씨 아이콘)과 같은 정보(날씨 상태)를 두 번
+ *   보여주면서 세로 공간만 잡아먹고, 좁은 화면에서는 배너와 아이콘이 시각적으로
+ *   겹쳐 보이는 문제가 있었다. 그래서 별도 배너를 없애고, 왼쪽 hero 아이콘 자리를
+ *   더 넓혀서(76px -> 112px) 그 안에 이 애니메이션을 직접 그려 넣는 방식으로 바꿨다.
+ *   아이콘 자리 하나가 "정적인 아이콘"에서 "그 자리에서 살아 움직이는 장면"으로
+ *   바뀌는 셈이라 정보 중복도 없고 레이아웃도 겹치지 않는다.
+ * - status 문자열(예: "튼구름")을 그대로 분기하면 API 표현이 바뀔 때마다 case를
+ *   추가해야 하니, 이미 정렬/아이콘에도 쓰고 있는 getWeatherCategory()로 대분류
+ *   (sun/cloud/rain/snow/storm) 하나만 받아서 그 카테고리에 맞는 장면을 그린다.
+ * - 빗방울/눈송이는 각자 다른 위치(left%)·지연시간(delay)·속도(duration)를 가져야
+ *   "우수수 떨어지는" 느낌이 나서, 렌더링 전에 미리 배열로 계산해 둔다.
+ */
+const props = defineProps({
+  status: {
+    type: String,
+    required: true
+  }
+})
+
+const category = computed(() => getWeatherCategory(props.status))
+
+const raindrops = Array.from({ length: 10 }, (_, i) => ({
+  left: (i * 10.3) % 100,
+  delay: (i % 5) * 0.16,
+  duration: 0.7 + (i % 4) * 0.12
+}))
+
+const snowflakes = Array.from({ length: 8 }, (_, i) => ({
+  left: (i * 12.6) % 100,
+  delay: (i % 4) * 0.35,
+  duration: 3.6 + (i % 4) * 0.5
+}))
+</script>
+
+<template>
+  <div class="scene" :class="`scene--${category}`">
+    <!-- 맑음: 해가 천천히 커졌다 작아지며 쨍쨍 -->
+    <template v-if="category === 'sun'">
+      <div class="sun">
+        <span v-for="n in 8" :key="n" class="sun__ray" :style="{ transform: `rotate(${n * 45}deg) translateY(-24px)` }"></span>
+        <div class="sun__core"></div>
+      </div>
+    </template>
+
+    <!-- 구름: 구름 두 덩이가 서로 다른 속도로 둥둥 지나감 -->
+    <template v-else-if="category === 'cloud'">
+      <i class="fa-solid fa-cloud cloud cloud--back"></i>
+      <i class="fa-solid fa-cloud cloud cloud--front"></i>
+    </template>
+
+    <!-- 비: 구름 아래로 빗방울이 계속 떨어짐 -->
+    <template v-else-if="category === 'rain'">
+      <i class="fa-solid fa-cloud cloud cloud--rain"></i>
+      <span
+        v-for="(drop, i) in raindrops"
+        :key="i"
+        class="raindrop"
+        :style="{ left: drop.left + '%', animationDelay: drop.delay + 's', animationDuration: drop.duration + 's' }"
+      ></span>
+    </template>
+
+    <!-- 눈: 눈송이가 좌우로 살랑이며 천천히 떨어짐 -->
+    <template v-else-if="category === 'snow'">
+      <i class="fa-solid fa-cloud cloud cloud--snow"></i>
+      <i
+        v-for="(flake, i) in snowflakes"
+        :key="i"
+        class="fa-solid fa-snowflake snowflake"
+        :style="{ left: flake.left + '%', animationDelay: flake.delay + 's', animationDuration: flake.duration + 's' }"
+      ></i>
+    </template>
+
+    <!-- 뇌우: 먹구름 + 번쩍이는 번개 + 굵은 비 -->
+    <template v-else-if="category === 'storm'">
+      <i class="fa-solid fa-cloud cloud cloud--storm"></i>
+      <i class="fa-solid fa-bolt bolt"></i>
+      <span
+        v-for="(drop, i) in raindrops.slice(0, 7)"
+        :key="i"
+        class="raindrop raindrop--storm"
+        :style="{ left: drop.left + '%', animationDelay: drop.delay + 's', animationDuration: (drop.duration * 0.8) + 's' }"
+      ></span>
+    </template>
+  </div>
+</template>
+
+<style scoped>
+/*
+ * 부모(hero__icon)가 이미 원형 테두리 + 크기 + overflow:hidden을 잡아주므로,
+ * 이 컴포넌트는 그 안을 100% 채우는 장면만 그린다.
+ */
+.scene {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scene--sun {
+  background: linear-gradient(180deg, #ffe6a3 0%, var(--color-sun-bg) 100%);
+}
+
+.scene--cloud {
+  background: linear-gradient(180deg, #dfe7f0 0%, var(--color-cloud-bg) 100%);
+}
+
+.scene--rain {
+  background: linear-gradient(180deg, #bcd6ff 0%, var(--color-rain-bg) 100%);
+}
+
+.scene--snow {
+  background: linear-gradient(180deg, #e6fbff 0%, var(--color-snow-bg) 100%);
+}
+
+.scene--storm {
+  background: linear-gradient(180deg, #cfc4f7 0%, var(--color-storm-bg) 100%);
+}
+
+/* ---------- 맑음 ---------- */
+.sun {
+  position: relative;
+  width: 10px;
+  height: 10px;
+}
+
+.sun__core {
+  position: absolute;
+  inset: -18px;
+  background: var(--color-sun);
+  border: 3px solid var(--color-ink);
+  border-radius: 50%;
+  animation: sun-pulse 2.2s ease-in-out infinite;
+}
+
+.sun__ray {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3px;
+  height: 11px;
+  margin: -5.5px 0 0 -1.5px;
+  background: var(--color-ink);
+  border-radius: 2px;
+  transform-origin: center;
+  animation-name: ray-pulse;
+  animation-duration: 2.2s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes sun-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 0.85;
+  }
+}
+
+@keyframes ray-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ---------- 구름 / 비 / 눈 / 뇌우 공통 ---------- */
+.cloud {
+  position: absolute;
+  color: #ffffff;
+  -webkit-text-stroke: 1.5px var(--color-ink);
+  font-size: 32px;
+}
+
+.cloud--back {
+  top: 18px;
+  font-size: 24px;
+  opacity: 0.7;
+  animation: drift-back 10s linear infinite;
+}
+
+.cloud--front {
+  top: 40px;
+  animation: drift-front 6.5s linear infinite;
+}
+
+.cloud--rain,
+.cloud--snow,
+.cloud--storm {
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+@keyframes drift-back {
+  from {
+    left: -30%;
+  }
+  to {
+    left: 120%;
+  }
+}
+
+@keyframes drift-front {
+  from {
+    left: -35%;
+  }
+  to {
+    left: 125%;
+  }
+}
+
+.raindrop {
+  position: absolute;
+  top: 38px;
+  width: 2px;
+  height: 12px;
+  background: var(--color-rain);
+  border-radius: 2px;
+  transform: rotate(-12deg);
+  animation-name: fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.raindrop--storm {
+  background: #4b3fb0;
+  height: 15px;
+}
+
+@keyframes fall {
+  from {
+    top: 38px;
+    opacity: 0.9;
+  }
+  to {
+    top: 106px;
+    opacity: 0.1;
+  }
+}
+
+.snowflake {
+  position: absolute;
+  top: 34px;
+  color: var(--color-snow);
+  font-size: 10px;
+  animation-name: snow-fall, snow-sway;
+  animation-timing-function: linear, ease-in-out;
+  animation-iteration-count: infinite, infinite;
+  animation-direction: normal, alternate;
+}
+
+@keyframes snow-fall {
+  from {
+    top: 30px;
+  }
+  to {
+    top: 106px;
+  }
+}
+
+@keyframes snow-sway {
+  from {
+    margin-left: -5px;
+  }
+  to {
+    margin-left: 5px;
+  }
+}
+
+.bolt {
+  position: absolute;
+  top: 48px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 22px;
+  color: #ffd93c;
+  -webkit-text-stroke: 1px var(--color-ink);
+  animation: flash 2.6s ease-in-out infinite;
+}
+
+@keyframes flash {
+  0%,
+  40%,
+  100% {
+    opacity: 0;
+  }
+  45%,
+  55% {
+    opacity: 1;
+  }
+  60% {
+    opacity: 0;
+  }
+}
+</style>

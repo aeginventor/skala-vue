@@ -8,6 +8,7 @@ import { getSubjectParticle } from '../utils/josa.js'
 import { fetchCurrentWeather, mapWeatherResponse } from '../api/weatherApi.js'
 import { useConfigStore } from '../stores/configStore.js'
 import { useWeatherStore } from '../stores/weatherStore.js'
+import { getWeatherCategory, WEATHER_CATEGORY_ORDER } from '../utils/weatherIcon.js'
 
 /**
  * WeatherHomeView
@@ -64,10 +65,19 @@ const filteredWeatherList = computed(() => {
  * - [피드백 반영] 즐겨찾기가 정렬에 전혀 반영되지 않아서, 즐겨찾기 도시를 항상 맨 앞으로
  *   오게 만들었다. 정렬 기준(이름/기온/날씨)은 "즐겨찾기 그룹"과 "나머지 그룹" 각각의
  *   내부 순서에만 적용된다.
+ * - [버그 수정] '날씨별' 정렬을 status 문자열 그대로 비교하던 걸 getWeatherCategory()로
+ *   뽑은 대분류(맑음/구름/비/눈/뇌우) 기준으로 바꿨다. "튼구름"과 "약간 흐림"처럼
+ *   문자열은 달라도 같은 구름 계열이면 이제 확실히 묶인다. 같은 카테고리 안에서는
+ *   이름순으로 2차 정렬해서 순서가 매번 들쭉날쭉하지 않게 했다.
  */
 function compareBySortOrder(a, b) {
   if (sortOrder.value === 'temp') return b.temp - a.temp // 높은 기온 순
-  if (sortOrder.value === 'weather') return a.status.localeCompare(b.status, 'ko')
+  if (sortOrder.value === 'weather') {
+    const categoryDiff =
+      WEATHER_CATEGORY_ORDER.indexOf(getWeatherCategory(a.status)) -
+      WEATHER_CATEGORY_ORDER.indexOf(getWeatherCategory(b.status))
+    return categoryDiff !== 0 ? categoryDiff : a.name.localeCompare(b.name, 'ko')
+  }
   return a.name.localeCompare(b.name, 'ko') // 이름순
 }
 

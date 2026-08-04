@@ -11,6 +11,7 @@ import { useConfigStore } from '../stores/configStore.js'
 import { useWeatherStore } from '../stores/weatherStore.js'
 import { getWeatherIcon } from '../utils/weatherIcon.js'
 import { formatLocalTime } from '../utils/formatTime.js'
+import WeatherAnimation from '../components/WeatherAnimation.vue'
 
 /**
  * WeatherDetailView
@@ -102,8 +103,16 @@ const visibilityKm = computed(() => {
         <i class="fa-solid fa-triangle-exclamation"></i> {{ fetchError }}
       </p>
 
+      <!--
+        [피드백 반영] 원래는 이 hero 블록 위에 날씨 애니메이션을 별도 배너로 뒀는데,
+        그러면 바로 아래 원형 아이콘과 같은 정보를 두 번 보여주면서 시각적으로도
+        겹쳐 보였다. 그래서 배너를 없애고 왼쪽 아이콘 자리를 넓혀서(hero__icon)
+        그 안에 애니메이션을 직접 그리는 방식으로 바꿨다.
+      -->
       <div class="hero">
-        <i :class="['fa-solid', getWeatherIcon(cityDetail.status)]" class="hero__icon"></i>
+        <div class="hero__icon">
+          <WeatherAnimation :status="cityDetail.status" />
+        </div>
         <div>
           <p class="hero__region"><i class="fa-solid fa-location-dot"></i> {{ cityDetail.region }}</p>
           <p class="hero__temp">{{ displayTemp }}{{ configStore.unitSymbol }}</p>
@@ -219,19 +228,20 @@ const visibilityKm = computed(() => {
   margin-bottom: 18px;
 }
 
+/*
+ * [피드백 반영] 원래 76px였던 정적 아이콘 자리를 112px로 넓혀서, 그 안에
+ * WeatherAnimation을 꽉 채워 그린다. overflow: hidden으로 원형 밖으로
+ * 삐져나가는 빗방울/눈송이 등을 자연스럽게 잘라낸다.
+ */
 .hero__icon {
-  width: 76px;
-  height: 76px;
+  width: 112px;
+  height: 112px;
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
   border-radius: 50%;
   background: var(--color-sun-bg);
   border: var(--border-thick);
   box-shadow: var(--shadow-hard-sm);
-  font-size: 34px;
-  color: var(--color-sun);
 }
 
 .hero__region {
