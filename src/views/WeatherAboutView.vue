@@ -7,8 +7,8 @@ import BaseDashboardCard from '../components/BaseDashboardCard.vue'
     <BaseDashboardCard title="서비스 소개" icon="fa-solid fa-circle-info">
       <p>본 앱은 Vue 3 · Vue Router 4 · Pinia · Axios 기반으로 제작된 실습용 기상 관측 대시보드입니다.</p>
       <ul>
-        <li>OpenWeatherMap 실시간 데이터 연동 (현재 날씨 + 예보 API)</li>
-        <li>상단 Dock에서 지역을 바로 선택하고, 홈 화면에서 전체 지역을 한눈에</li>
+        <li>전국 30개 지역의 OpenWeatherMap 실시간 데이터 연동 (현재 날씨 + 예보 API)</li>
+        <li>상단 Dock에서 지역을 바로 선택하고, 홈 화면은 전체 지역을 갤러리형 그리드로 한눈에</li>
         <li>즐겨찾기 · 정렬 기준 선택 등 요구사항 밖에서 추가한 개인 커스터마이징 기능</li>
       </ul>
       <RouterLink to="/" class="home-btn">
@@ -51,5 +51,7 @@ ul {
   font-size: 14px;
   padding: 12px;
   border-radius: var(--radius-sm);
+  border: var(--border-thick);
+  box-shadow: var(--shadow-hard-sm);
 }
 </style>

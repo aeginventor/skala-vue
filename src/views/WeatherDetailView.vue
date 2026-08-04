@@ -32,8 +32,8 @@ onMounted(async () => {
 
   try {
     const [currentWeatherData, forecastData] = await Promise.all([
-      fetchCurrentWeather(baseCity.apiQuery),
-      fetchForecast(baseCity.apiQuery)
+      fetchCurrentWeather(baseCity.lat, baseCity.lon),
+      fetchForecast(baseCity.lat, baseCity.lon)
     ])
     cityDetail.value = mapWeatherResponse(currentWeatherData, baseCity)
     forecastList.value = mapForecastResponse(forecastData)
@@ -150,20 +150,21 @@ const visibilityKm = computed(() => {
 
 <style scoped>
 .detail {
-  max-width: 560px;
+  max-width: 620px;
   margin: 0 auto;
 }
 
 .detail-card {
   background: var(--color-surface);
+  border: var(--border-thick);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-hard);
   padding: 22px 24px;
 }
 
 .detail-card h2 {
-  font-family: 'Space Grotesk', 'Pretendard', sans-serif;
-  font-size: 17px;
+  font-family: 'Fredoka', 'Pretendard', sans-serif;
+  font-size: 18px;
   font-weight: 600;
   margin: 0 0 16px;
   display: flex;
@@ -182,6 +183,7 @@ const visibilityKm = computed(() => {
   font-weight: 600;
   color: var(--color-warning);
   background: var(--color-warning-bg);
+  border: var(--border-thin);
   border-radius: var(--radius-sm);
   padding: 10px 14px;
 }
@@ -191,21 +193,23 @@ const visibilityKm = computed(() => {
   align-items: center;
   gap: 18px;
   padding: 6px 4px 20px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 3px dashed rgba(34, 34, 59, 0.2);
   margin-bottom: 18px;
 }
 
 .hero__icon {
-  width: 72px;
-  height: 72px;
+  width: 76px;
+  height: 76px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: var(--color-primary-bg);
-  font-size: 32px;
-  color: var(--color-primary);
+  background: var(--color-sun-bg);
+  border: var(--border-thick);
+  box-shadow: var(--shadow-hard-sm);
+  font-size: 34px;
+  color: var(--color-sun);
 }
 
 .hero__region {
@@ -216,8 +220,8 @@ const visibilityKm = computed(() => {
 
 .hero__temp {
   margin: 0;
-  font-family: 'Space Grotesk', 'Pretendard', sans-serif;
-  font-size: 34px;
+  font-family: 'Fredoka', 'Pretendard', sans-serif;
+  font-size: 36px;
   font-weight: 600;
   color: var(--color-ink);
 }
@@ -237,6 +241,7 @@ const visibilityKm = computed(() => {
 
 .stat-tile {
   background: var(--color-bg);
+  border: var(--border-thin);
   border-radius: var(--radius-sm);
   padding: 10px 12px;
 }
@@ -283,6 +288,7 @@ const visibilityKm = computed(() => {
   align-items: center;
   gap: 4px;
   background: var(--color-bg);
+  border: var(--border-thin);
   border-radius: var(--radius-sm);
   padding: 10px 6px;
   font-size: 12px;
@@ -319,5 +325,7 @@ const visibilityKm = computed(() => {
   font-size: 13px;
   padding: 10px 18px;
   border-radius: var(--radius-sm);
+  border: var(--border-thick);
+  box-shadow: var(--shadow-hard-sm);
 }
 </style>

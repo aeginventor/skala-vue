@@ -11,7 +11,7 @@ const unitLabel = () => (configStore.unit === 'celsius' ? '섭씨' : '화씨')
     <span class="unit-toggler__label">
       {{ unitLabel() }}({{ configStore.unitSymbol }})
     </span>
-    <button class="unit-toggler__btn" @click="configStore.toggleUnit">
+    <button class="unit-toggler__btn ink-pressable" @click="configStore.toggleUnit">
       <i class="fa-solid fa-arrows-rotate"></i>
     </button>
   </div>
@@ -32,17 +32,14 @@ const unitLabel = () => (configStore.unit === 'celsius' ? '섭씨' : '화씨')
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
-  border: none;
+  width: 36px;
+  height: 36px;
+  border: var(--border-thick);
   border-radius: 50%;
   background: var(--color-primary);
   color: #fff;
-  font-size: 13px;
+  box-shadow: var(--shadow-hard-sm);
+  font-size: 14px;
   cursor: pointer;
-}
-
-.unit-toggler__btn:hover {
-  background: var(--color-primary-dark);
 }
 </style>

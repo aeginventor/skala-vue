@@ -1,7 +1,7 @@
 <script setup>
 /**
- * BaseDashboardCard — "흰색 둥근 카드" 껍데기. icon prop은 이제 이모지 문자열이 아니라
- * Font Awesome 클래스 문자열(예: "fa-solid fa-magnifying-glass")을 받는다.
+ * BaseDashboardCard — "흰색 둥근 카드" 껍데기. 카툰 스타일에 맞춰 두꺼운 잉크
+ * 테두리 + 하드 섀도우를 기본값으로 준다. icon prop은 Font Awesome 클래스 문자열.
  */
 defineProps({
   title: {
@@ -28,14 +28,15 @@ defineProps({
 <style scoped>
 .card {
   background: var(--color-surface);
+  border: var(--border-thick);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-hard);
   padding: 20px 22px;
-  box-shadow: var(--shadow-card);
 }
 
 .card h2 {
-  font-family: 'Space Grotesk', 'Pretendard', sans-serif;
-  font-size: 16px;
+  font-family: 'Fredoka', 'Pretendard', sans-serif;
+  font-size: 17px;
   font-weight: 600;
   margin: 0 0 14px;
   display: flex;

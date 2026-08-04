@@ -16,14 +16,15 @@
   max-width: 360px;
   margin: 60px auto 0;
   background: var(--color-surface);
+  border: var(--border-thick);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-hard);
   padding: 40px 28px;
   text-align: center;
-  box-shadow: var(--shadow-card);
 }
 
 .not-found__icon {
-  font-size: 32px;
+  font-size: 34px;
   margin-bottom: 16px;
   color: var(--color-primary);
   display: flex;
@@ -32,8 +33,8 @@
 }
 
 h2 {
-  font-family: 'Space Grotesk', 'Pretendard', sans-serif;
-  font-size: 18px;
+  font-family: 'Fredoka', 'Pretendard', sans-serif;
+  font-size: 19px;
   font-weight: 600;
   margin: 0 0 8px;
   color: var(--color-ink);
@@ -57,5 +58,7 @@ p {
   font-size: 14px;
   padding: 10px 20px;
   border-radius: var(--radius-sm);
+  border: var(--border-thick);
+  box-shadow: var(--shadow-hard-sm);
 }
 </style>

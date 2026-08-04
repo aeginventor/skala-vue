@@ -1,8 +1,15 @@
 <script setup>
 import { computed } from 'vue'
 import { useConfigStore } from '../stores/configStore.js'
-import { getWeatherIcon } from '../utils/weatherIcon.js'
+import { getWeatherIcon, getWeatherTheme } from '../utils/weatherIcon.js'
 
+/**
+ * WeatherCard — "갤러리 타일"로 재설계.
+ * - 기존엔 텍스트 위주의 얇은 리스트 줄이었는데, 지역이 30개로 늘고 홈 화면이
+ *   그리드형 갤러리로 바뀌면서 "한눈에 훑어도 정보가 읽히는 큼직한 카드"가 필요해졌다.
+ * - 날씨 상태에 따라 카드 배경색 자체가 바뀐다(getWeatherTheme) — 맑음=노랑,
+ *   비=파랑, 흐림=회청 등. 텍스트를 읽지 않아도 색만으로 대략적인 날씨가 느껴지게.
+ */
 const props = defineProps({
   city: {
     type: Object,
@@ -22,8 +29,10 @@ const emit = defineEmits(['select-card', 'click-detail', 'toggle-favorite'])
 
 const configStore = useConfigStore()
 
+const theme = computed(() => getWeatherTheme(props.city.status))
 const icon = computed(() => getWeatherIcon(props.city.status))
 
+/** city.temp 원본은 항상 섭씨. 화면 표시 시점에만 configStore.unit 에 따라 변환. */
 const displayTemp = computed(() => {
   const rawTemp = props.city.temp
   if (configStore.unit === 'fahrenheit') {
@@ -44,135 +53,154 @@ function handleFavoriteClick() {
   emit('toggle-favorite', props.city)
 }
 
+/** 25도(섭씨) 기준. 단위가 화씨로 바뀌어도 판단은 항상 원본 섭씨 값으로 고정한다. */
 function isHot(rawCelsiusTemp) {
   return rawCelsiusTemp >= 25
 }
 </script>
 
 <template>
-  <li class="weather-card" :class="{ 'weather-card--active': isSelected }" @click="handleCardClick">
-    <i :class="['fa-solid', icon]" class="weather-card__icon"></i>
+  <li
+    class="tile ink-pressable"
+    :class="{ 'tile--active': isSelected, 'tile--favorite': isFavorite }"
+    :style="{ '--tile-bg': theme.bg, '--tile-accent': theme.accent }"
+    @click="handleCardClick"
+  >
+    <button
+      class="tile__favorite"
+      :class="{ 'tile__favorite--active': isFavorite }"
+      :aria-label="isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가'"
+      @click.stop="handleFavoriteClick"
+    >
+      <i :class="isFavorite ? 'fa-solid fa-star' : 'fa-regular fa-star'"></i>
+    </button>
 
-    <div class="weather-card__body">
-      <div class="weather-card__top">
-        <div class="weather-card__title">
-          {{ city.name }} ({{ city.status }})
-          <p class="weather-card__temp">현재 기온: {{ displayTemp }}{{ configStore.unitSymbol }}</p>
-        </div>
-        <button
-          class="favorite-btn"
-          :class="{ 'favorite-btn--active': isFavorite }"
-          :aria-label="isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가'"
-          @click.stop="handleFavoriteClick"
-        >
-          <i :class="isFavorite ? 'fa-solid fa-star' : 'fa-regular fa-star'"></i>
-        </button>
-        <button class="detail-btn" @click.stop="handleDetailClick">
-          상세보기 <i class="fa-solid fa-chevron-right"></i>
-        </button>
-      </div>
+    <div class="tile__icon-wrap">
+      <i :class="['fa-solid', icon]" class="tile__icon"></i>
+    </div>
 
-      <span v-if="isHot(city.temp)" class="badge badge--hot">
-        <i class="fa-solid fa-fire"></i> 더움 (25도 이상)
-      </span>
-      <span v-else class="badge badge--cool">
-        <i class="fa-solid fa-snowflake"></i> 선선함 (25도 미만)
-      </span>
+    <p class="tile__name">{{ city.name }}</p>
+    <p class="tile__region">{{ city.region }}</p>
+    <p class="tile__temp">{{ displayTemp }}<span class="tile__unit">{{ configStore.unitSymbol }}</span></p>
+
+    <span v-if="isHot(city.temp)" class="badge badge--hot">
+      <i class="fa-solid fa-fire"></i> 더움
+    </span>
+    <span v-else class="badge badge--cool">
+      <i class="fa-solid fa-snowflake"></i> 선선함
+    </span>
+
+    <div class="tile__footer">
+      <span class="tile__stat"><i class="fa-solid fa-droplet"></i> {{ city.humidity }}%</span>
+      <span class="tile__stat"><i class="fa-solid fa-wind"></i> {{ city.windSpeed }}m/s</span>
+      <button class="detail-btn ink-pressable" @click.stop="handleDetailClick">
+        상세 <i class="fa-solid fa-arrow-right"></i>
+      </button>
     </div>
   </li>
 </template>
 
 <style scoped>
-.weather-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: 14px 16px;
-  cursor: pointer;
-  transition: border-color 0.15s, background-color 0.15s;
+.tile {
+  position: relative;
   list-style: none;
-}
-
-.weather-card:hover {
-  border-color: var(--color-primary);
-}
-
-.weather-card--active {
-  border-color: var(--color-primary);
-  background: var(--color-primary-bg);
-}
-
-.weather-card__icon {
-  flex-shrink: 0;
-  width: 34px;
-  text-align: center;
-  font-size: 22px;
-  color: var(--color-primary);
-  margin-top: 2px;
-}
-
-.weather-card__body {
-  flex: 1;
-  min-width: 0;
-}
-
-.weather-card__top {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.weather-card__title {
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--color-ink);
-}
-
-.weather-card__temp {
-  margin: 4px 0 0;
-  font-weight: 400;
-  color: var(--color-muted);
-  font-size: 13px;
-}
-
-.favorite-btn {
-  border: none;
-  background: transparent;
-  color: var(--color-muted);
-  font-size: 15px;
+  background: var(--tile-bg, var(--color-sun-bg));
+  border: var(--border-thick);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-hard);
+  padding: 18px 16px 16px;
   cursor: pointer;
-  padding: 4px;
+  transition: transform 0.15s ease;
 }
 
-.favorite-btn--active {
-  color: var(--color-favorite);
+.tile:hover {
+  transform: translateY(-4px) rotate(-1deg);
 }
 
-.detail-btn {
-  border: 1px solid var(--color-border);
+.tile--active {
+  outline: 3px dashed var(--color-ink);
+  outline-offset: 3px;
+}
+
+.tile--favorite {
+  border-color: var(--color-favorite);
+  box-shadow: 5px 5px 0 var(--color-favorite);
+}
+
+.tile__favorite {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: var(--border-thin);
   background: #fff;
-  border-radius: var(--radius-sm);
-  padding: 6px 10px;
-  font-size: 12px;
-  color: var(--color-ink);
+  color: var(--color-muted);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.detail-btn:hover {
-  background: var(--color-primary-bg);
+.tile__favorite--active {
+  color: var(--color-favorite);
+  background: #fff9e6;
+}
+
+.tile__icon-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #fff;
+  border: var(--border-thin);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.tile__icon {
+  font-size: 30px;
+  color: var(--tile-accent, var(--color-sun));
+}
+
+.tile__name {
+  margin: 0;
+  font-family: 'Fredoka', 'Pretendard', sans-serif;
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.tile__region {
+  margin: 2px 0 8px;
+  font-size: 11px;
+  color: var(--color-muted);
+}
+
+.tile__temp {
+  margin: 0 0 8px;
+  font-family: 'Fredoka', 'Pretendard', sans-serif;
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.tile__unit {
+  font-size: 16px;
+  margin-left: 2px;
 }
 
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 600;
   padding: 4px 10px;
   border-radius: 999px;
+  border: var(--border-thin);
+  margin-bottom: 12px;
 }
 
 .badge--hot {
@@ -183,5 +211,36 @@ function isHot(rawCelsiusTemp) {
 .badge--cool {
   background: var(--color-cool-bg);
   color: var(--color-cool);
+}
+
+.tile__footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 2px dashed rgba(34, 34, 59, 0.2);
+}
+
+.tile__stat {
+  font-size: 11px;
+  color: var(--color-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.detail-btn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: var(--border-thin);
+  background: var(--color-ink);
+  color: #fff;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
 }
 </style>

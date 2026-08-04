@@ -138,11 +138,18 @@ watch(
   { deep: true }
 )
 
+/**
+ * [3일차 요구사항] Axios 로 OpenWeatherMap 실제 데이터 교체 + 로딩·에러 처리
+ * - 지역이 30개로 늘면서 Promise.all이 동시에 30번 호출한다. OpenWeatherMap 무료 플랜은
+ *   분당 60회까지 허용되므로 페이지 새로고침 한 번 정도는 문제없지만, 짧은 시간에
+ *   새로고침을 반복하면 429(Too Many Requests)가 날 수 있다는 점은 인지하고 있다.
+ *   (지금 범위에서는 재시도/캐싱까지는 넣지 않았고, 실패 시 Mock 데이터로 안전하게 대체한다)
+ */
 onMounted(async () => {
   try {
     const liveWeatherList = await Promise.all(
       weatherMockData.map(async (city) => {
-        const apiData = await fetchCurrentWeather(city.apiQuery)
+        const apiData = await fetchCurrentWeather(city.lat, city.lon)
         return mapWeatherResponse(apiData, city)
       })
     )
@@ -236,20 +243,20 @@ function toggleFavorite(city) {
 
 <style scoped>
 .dashboard {
-  max-width: 620px;
+  max-width: 1080px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 
 .weather-list {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
 }
 
 .toolbar {
@@ -287,7 +294,7 @@ function toggleFavorite(city) {
 }
 
 .toolbar__sort select {
-  border: 1px solid var(--color-border);
+  border: var(--border-thin);
   border-radius: var(--radius-sm);
   padding: 5px 10px;
   font-size: 12px;
@@ -311,6 +318,7 @@ function toggleFavorite(city) {
   font-weight: 600;
   color: var(--color-ink);
   background: var(--color-primary-bg);
+  border: var(--border-thin);
   border-radius: var(--radius-sm);
   padding: 12px 16px;
   display: flex;
@@ -328,6 +336,7 @@ function toggleFavorite(city) {
   font-weight: 600;
   color: var(--color-warning);
   background: var(--color-warning-bg);
+  border: var(--border-thin);
   border-radius: var(--radius-sm);
   padding: 10px 14px;
 }
@@ -336,6 +345,7 @@ function toggleFavorite(city) {
   text-align: center;
   padding: 14px;
   border-radius: var(--radius-sm);
+  border: var(--border-thin);
   background: var(--color-success-bg);
   color: var(--color-success);
   font-weight: 600;

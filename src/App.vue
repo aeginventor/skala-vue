@@ -44,8 +44,8 @@ import CityDock from './components/CityDock.vue'
 }
 
 .page-header h1 {
-  font-family: 'Space Grotesk', 'Pretendard', sans-serif;
-  font-size: 24px;
+  font-family: 'Fredoka', 'Pretendard', sans-serif;
+  font-size: 26px;
   font-weight: 600;
   margin: 0;
   display: flex;
@@ -57,12 +57,14 @@ import CityDock from './components/CityDock.vue'
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: var(--color-primary-bg);
-  color: var(--color-primary);
-  font-size: 17px;
+  background: var(--color-sun-bg);
+  border: var(--border-thick);
+  box-shadow: var(--shadow-hard-sm);
+  color: var(--color-sun);
+  font-size: 18px;
   animation: bob 3.2s ease-in-out infinite;
 }
 

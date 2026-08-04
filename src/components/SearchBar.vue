@@ -20,7 +20,7 @@ function handleInput(event) {
       <input
         class="search-input"
         type="text"
-        placeholder="검색할 도시 이름 입력"
+        placeholder="검색할 도시 이름 입력 (예: 강릉, 진주...)"
         :value="searchQuery"
         @input="handleInput"
       />
@@ -50,16 +50,18 @@ function handleInput(event) {
 .search-input {
   width: 100%;
   box-sizing: border-box;
-  padding: 10px 12px 10px 36px;
-  border: 1px solid var(--color-border);
+  padding: 12px 14px 12px 36px;
+  border: var(--border-thin);
   border-radius: var(--radius-sm);
   font-size: 14px;
   color: var(--color-ink);
+  background: var(--color-bg);
 }
 
 .search-input:focus {
   outline: none;
   border-color: var(--color-primary);
+  box-shadow: var(--shadow-hard-sm);
 }
 
 .search-status {

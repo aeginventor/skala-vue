@@ -9,11 +9,17 @@ const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY
 const CURRENT_WEATHER_URL = 'https://api.openweathermap.org/data/2.5/weather'
 const FORECAST_URL = 'https://api.openweathermap.org/data/2.5/forecast'
 
-/** [현재 날씨 API] OpenWeatherMap 현재 날씨 조회 */
-export async function fetchCurrentWeather(apiQuery) {
+/**
+ * [현재 날씨 API] OpenWeatherMap 현재 날씨 조회
+ * - 지역이 30개(중소도시 포함)로 늘면서 영문 도시명 쿼리(q=) 대신 위경도(lat/lon)로 바꿨다.
+ *   중소도시는 영문 표기가 여러 개거나 동명 지역이 있어서 q= 매칭이 불안정한데,
+ *   좌표는 지구상에 딱 한 지점만 가리켜서 훨씬 안정적이다.
+ */
+export async function fetchCurrentWeather(lat, lon) {
   const response = await axios.get(CURRENT_WEATHER_URL, {
     params: {
-      q: apiQuery,
+      lat,
+      lon,
       appid: API_KEY,
       units: 'metric', // 섭씨로 바로 받는다 (앱 내부 규칙: 원본은 항상 섭씨로 저장)
       lang: 'kr' // 날씨 설명을 "맑음", "튼구름"처럼 한글로 받는다
@@ -26,10 +32,11 @@ export async function fetchCurrentWeather(apiQuery) {
  * [예보 API] 3시간 간격 5일 예보 조회 — 현재 날씨 API와는 별도의 엔드포인트다.
  * 상세 페이지에서 "오늘 이후 흐름"을 보여주기 위해 추가로 붙였다.
  */
-export async function fetchForecast(apiQuery) {
+export async function fetchForecast(lat, lon) {
   const response = await axios.get(FORECAST_URL, {
     params: {
-      q: apiQuery,
+      lat,
+      lon,
       appid: API_KEY,
       units: 'metric',
       lang: 'kr'
@@ -40,7 +47,7 @@ export async function fetchForecast(apiQuery) {
 
 /**
  * 현재 날씨 API 응답을 우리 앱이 쓰는 "도시 객체" 형태로 변환한다.
- * - name/region/apiQuery 처럼 API가 안 주는(혹은 우리 표기와 다른) 필드는 baseCity(Mock) 값을 유지하고,
+ * - name/region/lat/lon 처럼 API가 안 주는(혹은 우리 표기와 다른) 필드는 baseCity(Mock) 값을 유지하고,
  *   실시간이어야 하는 필드만 API 값으로 덮어쓴다.
  * - 목록 화면(WeatherCard)이 안 쓰는 필드(feelsLike, pressure 등)까지 전부 담아두는 이유:
  *   상세 화면(WeatherDetailView)이 같은 변환 함수를 재사용할 수 있게 하기 위해서다.
