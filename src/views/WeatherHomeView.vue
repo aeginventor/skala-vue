@@ -231,81 +231,79 @@ function toggleFavorite(city) {
 
 <template>
   <div class="dashboard">
-    <div class="dashboard__main">
-      <BaseDashboardCard title="도시 검색" icon="fa-solid fa-magnifying-glass">
-        <SearchBar :search-query="searchQuery" @update-query="handleUpdateQuery" />
-      </BaseDashboardCard>
+    <BaseDashboardCard title="도시 검색" icon="fa-solid fa-magnifying-glass">
+      <SearchBar :search-query="searchQuery" @update-query="handleUpdateQuery" />
+    </BaseDashboardCard>
 
-      <p v-if="!isLoading && tagline" class="tagline">
-        <i class="fa-solid fa-lightbulb"></i> {{ tagline }}
-      </p>
+    <p v-if="!isLoading && tagline" class="tagline">
+      <i class="fa-solid fa-lightbulb"></i> {{ tagline }}
+    </p>
 
-      <p v-if="fetchError" class="fetch-error">
-        <i class="fa-solid fa-triangle-exclamation"></i> {{ fetchError }}
-      </p>
+    <p v-if="fetchError" class="fetch-error">
+      <i class="fa-solid fa-triangle-exclamation"></i> {{ fetchError }}
+    </p>
 
-      <BaseDashboardCard title="지역별 날씨 현황" icon="fa-solid fa-location-dot">
-        <div class="toolbar">
-          <div class="toolbar__stats">
-            <span><i class="fa-solid fa-list-ul"></i> 검색결과 {{ filteredCount }}개</span>
-            <span><i class="fa-solid fa-star"></i> 즐겨찾기 {{ favoriteCount }}개</span>
-            <span>
-              <i class="fa-solid fa-temperature-half"></i>
-              평균 {{ averageDisplayTemp }}{{ configStore.unitSymbol }}
-            </span>
-          </div>
-          <div class="toolbar__sort">
-            <label for="sort-order">정렬</label>
-            <select id="sort-order" v-model="sortOrder">
-              <option value="name">이름순</option>
-              <option value="temp">기온순</option>
-              <option value="weather">날씨별</option>
-            </select>
-          </div>
+    <BaseDashboardCard title="지역별 날씨 현황" icon="fa-solid fa-location-dot">
+      <div class="toolbar">
+        <div class="toolbar__stats">
+          <span><i class="fa-solid fa-list-ul"></i> 검색결과 {{ filteredCount }}개</span>
+          <span><i class="fa-solid fa-star"></i> 즐겨찾기 {{ favoriteCount }}개</span>
+          <span>
+            <i class="fa-solid fa-temperature-half"></i>
+            평균 {{ averageDisplayTemp }}{{ configStore.unitSymbol }}
+          </span>
         </div>
+        <div class="toolbar__sort">
+          <label for="sort-order">정렬</label>
+          <select id="sort-order" v-model="sortOrder">
+            <option value="name">이름순</option>
+            <option value="temp">기온순</option>
+            <option value="weather">날씨별</option>
+          </select>
+        </div>
+      </div>
 
-        <!--
-          v-show: 로딩 중엔 display:none 으로만 감춘다 (DOM에서 완전히 제거하는 v-if와 차이).
-          빈 화면 대신 실제 카드와 같은 모양의 회색 뼈대(스켈레톤)를 깜빡여서
-          "멈춘 것 같은" 느낌을 줄인다.
-        -->
-        <ul v-show="isLoading" class="weather-list" aria-busy="true" aria-label="날씨 정보를 불러오는 중입니다">
-          <li v-for="n in 10" :key="n" class="tile-skeleton">
-            <div class="skeleton skeleton--circle tile-skeleton__favorite"></div>
-            <div class="skeleton skeleton--circle tile-skeleton__icon"></div>
-            <div class="skeleton skeleton--text tile-skeleton__name"></div>
-            <div class="skeleton skeleton--text tile-skeleton__region"></div>
-            <div class="skeleton tile-skeleton__temp"></div>
-            <div class="skeleton skeleton--text tile-skeleton__badge"></div>
-          </li>
+      <!--
+        v-show: 로딩 중엔 display:none 으로만 감춘다 (DOM에서 완전히 제거하는 v-if와 차이).
+        빈 화면 대신 실제 카드와 같은 모양의 회색 뼈대(스켈레톤)를 깜빡여서
+        "멈춘 것 같은" 느낌을 줄인다.
+      -->
+      <ul v-show="isLoading" class="weather-list" aria-busy="true" aria-label="날씨 정보를 불러오는 중입니다">
+        <li v-for="n in 10" :key="n" class="tile-skeleton">
+          <div class="skeleton skeleton--circle tile-skeleton__favorite"></div>
+          <div class="skeleton skeleton--circle tile-skeleton__icon"></div>
+          <div class="skeleton skeleton--text tile-skeleton__name"></div>
+          <div class="skeleton skeleton--text tile-skeleton__region"></div>
+          <div class="skeleton tile-skeleton__temp"></div>
+          <div class="skeleton skeleton--text tile-skeleton__badge"></div>
+        </li>
+      </ul>
+
+      <template v-if="!isLoading">
+        <p v-if="sortedWeatherList.length === 0" class="empty-message">
+          검색어와 일치하는 도시가 없습니다.
+        </p>
+        <ul v-else class="weather-list">
+          <WeatherCard
+            v-for="city in sortedWeatherList"
+            :key="city.id"
+            :city="city"
+            :is-selected="selectedCityInfo?.id === city.id"
+            :is-favorite="favoriteCityIds.includes(city.id)"
+            @select-card="handleSelectCard"
+            @click-detail="handleClickDetail"
+            @toggle-favorite="toggleFavorite"
+          />
         </ul>
+      </template>
+    </BaseDashboardCard>
 
-        <template v-if="!isLoading">
-          <p v-if="sortedWeatherList.length === 0" class="empty-message">
-            검색어와 일치하는 도시가 없습니다.
-          </p>
-          <ul v-else class="weather-list">
-            <WeatherCard
-              v-for="city in sortedWeatherList"
-              :key="city.id"
-              :city="city"
-              :is-selected="selectedCityInfo?.id === city.id"
-              :is-favorite="favoriteCityIds.includes(city.id)"
-              @select-card="handleSelectCard"
-              @click-detail="handleClickDetail"
-              @toggle-favorite="toggleFavorite"
-            />
-          </ul>
-        </template>
-      </BaseDashboardCard>
-    </div>
-
-    <!-- [피드백 반영] 선택한 도시를 하단 상태바 대신 사이드에 고정해서 보여준다 (시인성 개선) -->
-    <aside class="dashboard__side">
-      <BaseDashboardCard title="선택한 도시" icon="fa-solid fa-star">
-        <SelectedCityPanel :city="selectedCityInfo" @click-detail="handleClickDetail" />
-      </BaseDashboardCard>
-    </aside>
+    <!--
+      [피드백 반영] 사이드에 두니 디자인 밸런스가 깨져서 다시 하단으로 옮겼다.
+      다만 그냥 페이지 맨 아래(normal flow)에 두면 스크롤을 끝까지 내려야만 보이니,
+      position: fixed로 뷰포트 바닥에 항상 붙어있게 했다.
+    -->
+    <SelectedCityPanel :city="selectedCityInfo" @click-detail="handleClickDetail" />
   </div>
 </template>
 
@@ -313,33 +311,11 @@ function toggleFavorite(city) {
 .dashboard {
   max-width: 1080px;
   margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 300px;
-  align-items: start;
-  gap: 18px;
-}
-
-.dashboard__main {
   display: flex;
   flex-direction: column;
   gap: 18px;
-  min-width: 0;
-}
-
-/* 목록을 스크롤해도 선택한 도시 패널은 화면에 붙어있게 sticky 처리 */
-.dashboard__side {
-  position: sticky;
-  top: 20px;
-}
-
-@media (max-width: 860px) {
-  .dashboard {
-    grid-template-columns: 1fr;
-  }
-
-  .dashboard__side {
-    position: static;
-  }
+  /* 하단에 고정되는 SelectedCityPanel한테 마지막 카드가 가리지 않도록 여유를 둔다 */
+  padding-bottom: 110px;
 }
 
 .weather-list {
