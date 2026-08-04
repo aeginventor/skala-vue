@@ -93,10 +93,16 @@ function isHot(rawCelsiusTemp) {
     <div class="tile__footer">
       <span class="tile__stat"><i class="fa-solid fa-droplet"></i> {{ city.humidity }}%</span>
       <span class="tile__stat"><i class="fa-solid fa-wind"></i> {{ city.windSpeed }}m/s</span>
-      <button class="detail-btn ink-pressable" @click.stop="handleDetailClick">
-        상세 <i class="fa-solid fa-arrow-right"></i>
-      </button>
     </div>
+
+    <!--
+      [피드백 반영] 카드 클릭으로는 더 이상 상세 페이지로 못 가고 "선택"만 되므로,
+      이 버튼이 상세 페이지로 가는 유일한 통로가 됐다. 그만큼 누르기 쉽게 폭 전체를
+      차지하는 큰 버튼으로 키웠다.
+    -->
+    <button class="detail-btn ink-pressable" @click.stop="handleDetailClick">
+      상세보기 <i class="fa-solid fa-arrow-right"></i>
+    </button>
   </li>
 </template>
 
@@ -216,8 +222,9 @@ function isHot(rawCelsiusTemp) {
 .tile__footer {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
   padding-top: 10px;
+  padding-bottom: 12px;
   border-top: 2px dashed rgba(34, 34, 59, 0.2);
 }
 
@@ -230,17 +237,19 @@ function isHot(rawCelsiusTemp) {
 }
 
 .detail-btn {
-  margin-left: auto;
+  width: 100%;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  border: var(--border-thin);
+  justify-content: center;
+  gap: 6px;
+  border: var(--border-thick);
   background: var(--color-ink);
   color: #fff;
-  border-radius: 999px;
-  padding: 6px 12px;
-  font-size: 11px;
-  font-weight: 600;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-hard-sm);
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
 }
 </style>
