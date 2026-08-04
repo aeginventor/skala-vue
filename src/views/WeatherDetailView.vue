@@ -2,14 +2,35 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { findCityById } from '../data/weatherMockData.js'
+import { fetchCurrentWeather, mapWeatherResponse } from '../api/weatherApi.js'
 import { useConfigStore } from '../stores/configStore.js'
 
 const route = useRoute()
 const cityDetail = ref(null)
 const configStore = useConfigStore()
 
-onMounted(() => {
-  cityDetail.value = findCityById(route.params.cityId)
+const isLoading = ref(true)
+const fetchError = ref(null)
+
+onMounted(async () => {
+  const baseCity = findCityById(route.params.cityId)
+
+  if (!baseCity) {
+    isLoading.value = false
+    return
+  }
+
+  cityDetail.value = baseCity
+
+  try {
+    const apiData = await fetchCurrentWeather(baseCity.apiQuery)
+    cityDetail.value = mapWeatherResponse(apiData, baseCity)
+  } catch (error) {
+    fetchError.value = '실시간 날씨 데이터를 불러오지 못해 임시 데이터로 표시합니다.'
+    console.error('[Axios 에러] OpenWeatherMap 호출 실패:', error)
+  } finally {
+    isLoading.value = false
+  }
 })
 
 const displayTemp = computed(() => {
@@ -24,8 +45,14 @@ const displayTemp = computed(() => {
 
 <template>
   <div class="detail">
-    <div v-if="cityDetail" class="detail-card">
+    <!-- [로딩 처리] 첫 조회(도시 자체를 못 찾은 경우 제외) 동안만 노출 -->
+    <div v-if="isLoading" class="detail-card detail-card--empty">
+      <p>날씨 정보를 불러오는 중입니다...</p>
+    </div>
+
+    <div v-else-if="cityDetail" class="detail-card">
       <h2>📊 지역별 상세 기상 관측 정보</h2>
+      <p v-if="fetchError" class="fetch-error">⚠️ {{ fetchError }}</p>
       <dl class="detail-list">
         <div class="detail-row">
           <dt>📍 지정 지역</dt>
@@ -75,6 +102,16 @@ const displayTemp = computed(() => {
 .detail-card h2 {
   font-size: 15px;
   margin: 0 0 14px;
+}
+
+.fetch-error {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #b45309;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  padding: 10px 14px;
 }
 
 .detail-list {

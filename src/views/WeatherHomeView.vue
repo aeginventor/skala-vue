@@ -1,17 +1,21 @@
 <script setup>
-import { ref, computed, watch, watchEffect } from 'vue'
+import { ref, computed, watch, watchEffect, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseDashboardCard from '../components/exercise/BaseDashboardCard.vue'
 import SearchBar from '../components/exercise/SearchBar.vue'
 import WeatherCard from '../components/exercise/WeatherCard.vue'
 import { getSubjectParticle } from '../utils/josa.js'
 import { weatherMockData } from '../data/weatherMockData.js'
+import { fetchCurrentWeather, mapWeatherResponse } from '../api/weatherApi.js'
 
 const router = useRouter()
 
 const weatherList = ref(weatherMockData)
 const searchQuery = ref('')
 const selectedCityInfo = ref(null)
+
+const isLoading = ref(true)
+const fetchError = ref(null)
 
 const filteredWeatherList = computed(() => {
   const keyword = searchQuery.value.trim()
@@ -35,6 +39,23 @@ watchEffect(() => {
   )
 })
 
+onMounted(async () => {
+  try {
+    const liveWeatherList = await Promise.all(
+      weatherMockData.map(async (city) => {
+        const apiData = await fetchCurrentWeather(city.apiQuery)
+        return mapWeatherResponse(apiData, city)
+      }),
+    )
+    weatherList.value = liveWeatherList
+  } catch (error) {
+    fetchError.value = '실시간 날씨 데이터를 불러오지 못해 임시 데이터로 표시합니다.'
+    console.error('[Axios 에러] OpenWeatherMap 호출 실패:', error)
+  } finally {
+    isLoading.value = false
+  }
+})
+
 function handleUpdateQuery(newQuery) {
   searchQuery.value = newQuery
 }
@@ -42,7 +63,6 @@ function handleUpdateQuery(newQuery) {
 function handleSelectCard(city) {
   selectedCityInfo.value = city
 }
-
 function handleClickDetail(city) {
   router.push(`/weather/${city.id}`)
 }
@@ -54,8 +74,12 @@ function handleClickDetail(city) {
       <SearchBar :search-query="searchQuery" @update-query="handleUpdateQuery" />
     </BaseDashboardCard>
 
+    <p v-if="fetchError" class="fetch-error">⚠️ {{ fetchError }}</p>
+
     <BaseDashboardCard title="지역별 날씨 현황" icon="📍">
-      <p v-if="filteredWeatherList.length === 0" class="empty-message">
+      <!-- [로딩 처리] API 응답을 기다리는 동안 목록 대신 안내 문구 -->
+      <p v-if="isLoading" class="loading-message">날씨 정보를 불러오는 중입니다...</p>
+      <p v-else-if="filteredWeatherList.length === 0" class="empty-message">
         검색어와 일치하는 도시가 없습니다.
       </p>
       <ul v-else class="weather-list">
@@ -92,12 +116,23 @@ function handleClickDetail(city) {
   gap: 10px;
 }
 
-.empty-message {
+.empty-message,
+.loading-message {
   margin: 0;
   font-size: 13px;
   color: #9ca3af;
   text-align: center;
   padding: 12px 0;
+}
+
+.fetch-error {
+  margin: 0;
+  font-size: 13px;
+  color: #b45309;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  padding: 10px 14px;
 }
 
 .status-bar {
