@@ -44,3 +44,6 @@ __screenshots__/
 # env
 .env
 .env.*
+!.env.example
+
+skala-vue-ref

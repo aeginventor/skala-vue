@@ -1,20 +1,19 @@
 <script setup>
 import UnitToggler from './components/UnitToggler.vue'
+import CityDock from './components/CityDock.vue'
 </script>
 
 <template>
   <div class="page">
     <header class="page-header">
-      <span class="page-header__badge">6. Pinia</span>
-      <h1>과제 5: 스토어적용</h1>
-      <nav class="nav-bar">
-        <div class="nav-links">
-          <RouterLink to="/" class="nav-link">날씨 대시보드</RouterLink>
-          <span class="nav-divider">|</span>
-          <RouterLink to="/about" class="nav-link">서비스 소개</RouterLink>
-        </div>
+      <div class="page-header__top">
+        <h1>
+          <span class="brand-badge"><i class="fa-solid fa-cloud-sun"></i></span>
+          날씨 대시보드
+        </h1>
         <UnitToggler />
-      </nav>
+      </div>
+      <CityDock />
     </header>
 
     <main class="page-main">
@@ -26,61 +25,60 @@ import UnitToggler from './components/UnitToggler.vue'
 <style scoped>
 .page {
   min-height: 100vh;
-  background: #eef2f9;
-  padding: 32px 16px;
+  background: var(--color-bg);
+  padding: 32px 16px 60px;
   font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
-  color: #1f2937;
+  color: var(--color-ink);
 }
 
 .page-header {
-  max-width: 520px;
-  margin: 0 auto 20px;
+  max-width: 720px;
+  margin: 0 auto 32px;
 }
 
-.page-header__badge {
-  font-size: 12px;
-  color: #6b7280;
-}
-
-.page-header h1 {
-  font-size: 22px;
-  margin: 4px 0 16px;
-}
-
-.nav-bar {
-  background: #fff;
-  border-radius: 10px;
-  padding: 10px 16px;
+.page-header__top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+  margin-bottom: 18px;
 }
 
-.nav-links {
+.page-header h1 {
+  font-family: 'Space Grotesk', 'Pretendard', sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0;
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.nav-link {
-  color: #6b7280;
-  text-decoration: none;
-  font-size: 14px;
-  padding: 4px 6px;
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--color-primary-bg);
+  color: var(--color-primary);
+  font-size: 17px;
+  animation: bob 3.2s ease-in-out infinite;
 }
 
-.nav-divider {
-  color: #e5e7eb;
-}
-
-.nav-link.router-link-exact-active {
-  color: #2563eb;
-  font-weight: 600;
-  border-bottom: 2px solid #2563eb;
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-4px) rotate(-6deg);
+  }
 }
 
 .page-main {
-  padding-top: 16px;
+  padding-top: 4px;
+  max-width: 1080px;
+  margin: 0 auto;
 }
 </style>

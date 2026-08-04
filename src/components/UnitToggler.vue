@@ -9,9 +9,11 @@ const unitLabel = () => (configStore.unit === 'celsius' ? '섭씨' : '화씨')
 <template>
   <div class="unit-toggler">
     <span class="unit-toggler__label">
-      날씨단위: {{ unitLabel() }}({{ configStore.unitSymbol }})
+      {{ unitLabel() }}({{ configStore.unitSymbol }})
     </span>
-    <button class="unit-toggler__btn" @click="configStore.toggleUnit">단위변경</button>
+    <button class="unit-toggler__btn" @click="configStore.toggleUnit">
+      <i class="fa-solid fa-arrows-rotate"></i>
+    </button>
   </div>
 </template>
 
@@ -20,22 +22,27 @@ const unitLabel = () => (configStore.unit === 'celsius' ? '섭씨' : '화씨')
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
-  color: #4b5563;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-muted);
   white-space: nowrap;
 }
 
 .unit-toggler__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
   border: none;
-  background: #1f2937;
+  border-radius: 50%;
+  background: var(--color-primary);
   color: #fff;
-  font-size: 12px;
-  padding: 6px 10px;
-  border-radius: 6px;
+  font-size: 13px;
   cursor: pointer;
 }
 
 .unit-toggler__btn:hover {
-  background: #374151;
+  background: var(--color-primary-dark);
 }
 </style>

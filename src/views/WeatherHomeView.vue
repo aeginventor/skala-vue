@@ -1,14 +1,22 @@
 <script setup>
 import { ref, computed, watch, watchEffect, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import BaseDashboardCard from '../components/exercise/BaseDashboardCard.vue'
-import SearchBar from '../components/exercise/SearchBar.vue'
-import WeatherCard from '../components/exercise/WeatherCard.vue'
+import BaseDashboardCard from '../components/BaseDashboardCard.vue'
+import SearchBar from '../components/SearchBar.vue'
+import WeatherCard from '../components/WeatherCard.vue'
 import { getSubjectParticle } from '../utils/josa.js'
 import { weatherMockData } from '../data/weatherMockData.js'
 import { fetchCurrentWeather, mapWeatherResponse } from '../api/weatherApi.js'
+import { useConfigStore } from '../stores/configStore.js'
 
+/**
+ * WeatherHomeView
+ * - 로직(반응형 상태 / computed / watch / watchEffect / Axios)은 이전 미션과 이어지고,
+ *   여기서부터는 과제 요구사항 밖에서 "내가 직접 판단해서" 추가한 기능들이다.
+ *   (즐겨찾기, 정렬, 통계 computed, localStorage 저장)
+ */
 const router = useRouter()
+const configStore = useConfigStore()
 
 const weatherList = ref(weatherMockData)
 const searchQuery = ref('')
@@ -17,10 +25,84 @@ const selectedCityInfo = ref(null)
 const isLoading = ref(true)
 const fetchError = ref(null)
 
+/**
+ * [내가 추가한 반응형 변수 1] 즐겨찾기 도시 id 목록
+ * - id 배열로만 관리하는 이유: 도시 객체 전체를 통째로 저장하면 온도 같은 값이 갱신될 때
+ *   즐겨찾기 목록에 있는 "옛날 온도"와 실제 카드의 "최신 온도"가 따로 놀 위험이 있다.
+ *   id만 들고 있으면 항상 weatherList 의 최신 데이터를 참조하게 되어 그런 불일치가 없다.
+ */
+const FAVORITES_STORAGE_KEY = 'skala-weather-favorites'
+
+function loadFavoritesFromStorage() {
+  try {
+    const raw = localStorage.getItem(FAVORITES_STORAGE_KEY)
+    return raw ? JSON.parse(raw) : []
+  } catch (error) {
+    console.error('[localStorage 읽기 실패] 즐겨찾기 목록을 불러오지 못했습니다:', error)
+    return []
+  }
+}
+
+const favoriteCityIds = ref(loadFavoritesFromStorage())
+
+/** [내가 추가한 반응형 변수 2] 정렬 기준 (이름순 / 기온순) */
+const sortOrder = ref('name')
+
 const filteredWeatherList = computed(() => {
   const keyword = searchQuery.value.trim()
   if (!keyword) return weatherList.value
   return weatherList.value.filter((city) => city.name.includes(keyword))
+})
+
+/**
+ * [내가 추가한 computed 1] 검색 필터링 결과를 정렬 기준에 맞게 다시 정렬.
+ * filteredWeatherList 를 그대로 바꾸지 않고 얕은 복사([...list])한 뒤 정렬한다.
+ * Array.prototype.sort() 는 원본 배열을 직접 변경(mutate)하는 함수라서,
+ * 복사 없이 그냥 정렬하면 filteredWeatherList(원본 참조)까지 같이 뒤바뀌어 버린다.
+ */
+function compareBySortOrder(a, b) {
+  if (sortOrder.value === 'temp') return b.temp - a.temp // 높은 기온 순
+  return a.name.localeCompare(b.name, 'ko') // 이름순
+}
+
+const sortedWeatherList = computed(() => [...filteredWeatherList.value].sort(compareBySortOrder))
+
+/** [내가 추가한 computed 2] 즐겨찾기 개수 */
+const favoriteCount = computed(() => favoriteCityIds.value.length)
+
+/** [내가 추가한 computed 3] 평균 기온 (섭씨 원본 기준으로 계산 후, 화면 표시 단위에 맞춰 변환) */
+const averageTempCelsius = computed(() => {
+  if (weatherList.value.length === 0) return 0
+  const total = weatherList.value.reduce((sum, city) => sum + city.temp, 0)
+  return Math.round(total / weatherList.value.length)
+})
+const averageDisplayTemp = computed(() => {
+  if (configStore.unit === 'fahrenheit') {
+    return Math.round((averageTempCelsius.value * 9) / 5 + 32)
+  }
+  return averageTempCelsius.value
+})
+
+/**
+ * [내가 추가한 computed 4/5] 최고·최저 기온 도시.
+ * reduce로 배열을 한 번만 훑어서 찾는다.
+ */
+const hottestCity = computed(() => {
+  if (weatherList.value.length === 0) return null
+  return weatherList.value.reduce((hottest, city) => (city.temp > hottest.temp ? city : hottest))
+})
+const coldestCity = computed(() => {
+  if (weatherList.value.length === 0) return null
+  return weatherList.value.reduce((coldest, city) => (city.temp < coldest.temp ? city : coldest))
+})
+
+/** 위 두 computed를 조합해서 자연스러운 한 문장으로 만든다. josa.js를 여기서도 재사용. */
+const tagline = computed(() => {
+  if (!hottestCity.value || !coldestCity.value) return ''
+  const hot = hottestCity.value.name
+  const cold = coldestCity.value.name
+  if (hot === cold) return `오늘은 전 지역이 ${hot}${getSubjectParticle(hot)} 비슷한 날씨예요.`
+  return `오늘은 ${hot}${getSubjectParticle(hot)} 가장 덥고, ${cold}${getSubjectParticle(cold)} 가장 선선해요.`
 })
 
 const statusMessage = computed(() => {
@@ -34,10 +116,27 @@ watch(selectedCityInfo, (newCity) => {
 })
 
 watchEffect(() => {
-  console.log(
-    `[watchEffect 자동 호출] 현재 검색어 '${searchQuery.value}'에 매칭되는 도시를 필터링합니다.`,
-  )
+  console.log(`[watchEffect 자동 호출] 현재 검색어 '${searchQuery.value}'에 매칭되는 도시를 필터링합니다.`)
 })
+
+/** [내가 추가한 watch 1] 정렬 기준이 바뀔 때 콘솔 로그 */
+watch(sortOrder, (newOrder) => {
+  const labelMap = { temp: '기온순', name: '이름순' }
+  console.log(`[watch 감지] 정렬 기준이 '${labelMap[newOrder]}'으로 바뀌었습니다.`)
+})
+
+/**
+ * [내가 추가한 watch 2] 즐겨찾기 목록이 바뀔 때마다 localStorage에 저장.
+ * watchEffect 대신 watch를 고른 이유: "즐겨찾기 배열 자체"만 감시 대상으로 못 박고 싶어서다.
+ */
+watch(
+  favoriteCityIds,
+  (newFavorites) => {
+    localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(newFavorites))
+    console.log('[watch 감지] 즐겨찾기 목록이 localStorage에 저장되었습니다:', newFavorites)
+  },
+  { deep: true }
+)
 
 onMounted(async () => {
   try {
@@ -45,7 +144,7 @@ onMounted(async () => {
       weatherMockData.map(async (city) => {
         const apiData = await fetchCurrentWeather(city.apiQuery)
         return mapWeatherResponse(apiData, city)
-      }),
+      })
     )
     weatherList.value = liveWeatherList
   } catch (error) {
@@ -66,32 +165,69 @@ function handleSelectCard(city) {
 function handleClickDetail(city) {
   router.push(`/weather/${city.id}`)
 }
+
+/** [내가 추가한 함수] 즐겨찾기 토글. id 배열만 갈아끼운다 (불변 업데이트) */
+function toggleFavorite(city) {
+  if (favoriteCityIds.value.includes(city.id)) {
+    favoriteCityIds.value = favoriteCityIds.value.filter((id) => id !== city.id)
+  } else {
+    favoriteCityIds.value = [...favoriteCityIds.value, city.id]
+  }
+}
 </script>
 
 <template>
   <div class="dashboard">
-    <BaseDashboardCard title="도시 검색" icon="🔍">
+    <BaseDashboardCard title="도시 검색" icon="fa-solid fa-magnifying-glass">
       <SearchBar :search-query="searchQuery" @update-query="handleUpdateQuery" />
     </BaseDashboardCard>
 
-    <p v-if="fetchError" class="fetch-error">⚠️ {{ fetchError }}</p>
+    <p v-if="!isLoading && tagline" class="tagline">
+      <i class="fa-solid fa-lightbulb"></i> {{ tagline }}
+    </p>
 
-    <BaseDashboardCard title="지역별 날씨 현황" icon="📍">
-      <!-- [로딩 처리] API 응답을 기다리는 동안 목록 대신 안내 문구 -->
-      <p v-if="isLoading" class="loading-message">날씨 정보를 불러오는 중입니다...</p>
-      <p v-else-if="filteredWeatherList.length === 0" class="empty-message">
-        검색어와 일치하는 도시가 없습니다.
-      </p>
-      <ul v-else class="weather-list">
-        <WeatherCard
-          v-for="city in filteredWeatherList"
-          :key="city.id"
-          :city="city"
-          :is-selected="selectedCityInfo?.id === city.id"
-          @select-card="handleSelectCard"
-          @click-detail="handleClickDetail"
-        />
-      </ul>
+    <p v-if="fetchError" class="fetch-error">
+      <i class="fa-solid fa-triangle-exclamation"></i> {{ fetchError }}
+    </p>
+
+    <BaseDashboardCard title="지역별 날씨 현황" icon="fa-solid fa-location-dot">
+      <div class="toolbar">
+        <div class="toolbar__stats">
+          <span><i class="fa-solid fa-star"></i> 즐겨찾기 {{ favoriteCount }}개</span>
+          <span>
+            <i class="fa-solid fa-temperature-half"></i>
+            평균 {{ averageDisplayTemp }}{{ configStore.unitSymbol }}
+          </span>
+        </div>
+        <div class="toolbar__sort">
+          <label for="sort-order">정렬</label>
+          <select id="sort-order" v-model="sortOrder">
+            <option value="name">이름순</option>
+            <option value="temp">기온순</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- v-show: 로딩 문구는 display:none 으로만 감춘다 (DOM에서 완전히 제거하는 v-if와 차이) -->
+      <p v-show="isLoading" class="loading-message"><i class="fa-solid fa-spinner fa-spin"></i> 날씨 정보를 불러오는 중입니다...</p>
+
+      <template v-if="!isLoading">
+        <p v-if="sortedWeatherList.length === 0" class="empty-message">
+          검색어와 일치하는 도시가 없습니다.
+        </p>
+        <ul v-else class="weather-list">
+          <WeatherCard
+            v-for="city in sortedWeatherList"
+            :key="city.id"
+            :city="city"
+            :is-selected="selectedCityInfo?.id === city.id"
+            :is-favorite="favoriteCityIds.includes(city.id)"
+            @select-card="handleSelectCard"
+            @click-detail="handleClickDetail"
+            @toggle-favorite="toggleFavorite"
+          />
+        </ul>
+      </template>
     </BaseDashboardCard>
 
     <footer class="status-bar">{{ statusMessage }}</footer>
@@ -100,7 +236,7 @@ function handleClickDetail(city) {
 
 <style scoped>
 .dashboard {
-  max-width: 520px;
+  max-width: 620px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -116,31 +252,93 @@ function handleClickDetail(city) {
   gap: 10px;
 }
 
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.toolbar__stats {
+  display: flex;
+  gap: 14px;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.toolbar__stats .fa-star {
+  color: var(--color-favorite);
+}
+
+.toolbar__stats .fa-temperature-half {
+  color: var(--color-primary);
+}
+
+.toolbar__sort {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.toolbar__sort select {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-ink);
+  background: var(--color-surface);
+}
+
 .empty-message,
 .loading-message {
   margin: 0;
   font-size: 13px;
-  color: #9ca3af;
+  color: var(--color-muted);
   text-align: center;
   padding: 12px 0;
+}
+
+.tagline {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-ink);
+  background: var(--color-primary-bg);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tagline i {
+  color: var(--color-primary);
 }
 
 .fetch-error {
   margin: 0;
   font-size: 13px;
-  color: #b45309;
-  background: #fffbeb;
-  border: 1px solid #fde68a;
-  border-radius: 8px;
+  font-weight: 600;
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+  border-radius: var(--radius-sm);
   padding: 10px 14px;
 }
 
 .status-bar {
   text-align: center;
-  padding: 12px;
-  border-radius: 10px;
-  background: #dcfce7;
-  color: #166534;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  font-weight: 600;
   font-size: 13px;
 }
 </style>
