@@ -1,13 +1,24 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { findCityById } from '../data/weatherMockData.js'
+import { useConfigStore } from '../stores/configStore.js'
 
 const route = useRoute()
 const cityDetail = ref(null)
+const configStore = useConfigStore()
 
 onMounted(() => {
   cityDetail.value = findCityById(route.params.cityId)
+})
+
+const displayTemp = computed(() => {
+  const rawTemp = cityDetail.value?.temp
+  if (rawTemp === undefined) return null
+  if (configStore.unit === 'fahrenheit') {
+    return Math.round((rawTemp * 9) / 5 + 32)
+  }
+  return rawTemp
 })
 </script>
 
@@ -22,7 +33,7 @@ onMounted(() => {
         </div>
         <div class="detail-row">
           <dt>실시간 기온</dt>
-          <dd>{{ cityDetail.temp }}°C</dd>
+          <dd>{{ displayTemp }}{{ configStore.unitSymbol }}</dd>
         </div>
         <div class="detail-row">
           <dt>기상 현황</dt>

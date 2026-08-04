@@ -1,4 +1,7 @@
 <script setup>
+import { computed } from 'vue'
+import { useConfigStore } from '../../stores/configStore.js'
+
 const props = defineProps({
   city: {
     type: Object,
@@ -12,6 +15,16 @@ const props = defineProps({
 
 const emit = defineEmits(['select-card', 'click-detail'])
 
+const configStore = useConfigStore()
+
+const displayTemp = computed(() => {
+  const rawTemp = props.city.temp
+  if (configStore.unit === 'fahrenheit') {
+    return Math.round((rawTemp * 9) / 5 + 32)
+  }
+  return rawTemp
+})
+
 function handleCardClick() {
   emit('select-card', props.city)
 }
@@ -20,8 +33,8 @@ function handleDetailClick() {
   emit('click-detail', props.city)
 }
 
-function isHot(temp) {
-  return temp >= 25
+function isHot(rawCelsiusTemp) {
+  return rawCelsiusTemp >= 25
 }
 </script>
 
@@ -30,7 +43,7 @@ function isHot(temp) {
     <div class="weather-card__top">
       <div class="weather-card__title">
         {{ city.name }} ({{ city.status }})
-        <p class="weather-card__temp">현재 기온: {{ city.temp }}°C</p>
+        <p class="weather-card__temp">현재 기온: {{ displayTemp }}{{ configStore.unitSymbol }}</p>
       </div>
       <button class="detail-btn" @click.stop="handleDetailClick">상세보기</button>
     </div>

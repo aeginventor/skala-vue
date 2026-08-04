@@ -1,14 +1,19 @@
-<script setup></script>
+<script setup>
+import UnitToggler from './components/UnitToggler.vue'
+</script>
 
 <template>
   <div class="page">
     <header class="page-header">
-      <span class="page-header__badge"></span>
-      <h1>과제 3: 라우터적용</h1>
+      <span class="page-header__badge">6. Pinia</span>
+      <h1>과제 5: 스토어적용</h1>
       <nav class="nav-bar">
-        <RouterLink to="/" class="nav-link">날씨 대시보드</RouterLink>
-        <span class="nav-divider">|</span>
-        <RouterLink to="/about" class="nav-link">서비스 소개</RouterLink>
+        <div class="nav-links">
+          <RouterLink to="/" class="nav-link">날씨 대시보드</RouterLink>
+          <span class="nav-divider">|</span>
+          <RouterLink to="/about" class="nav-link">서비스 소개</RouterLink>
+        </div>
+        <UnitToggler />
       </nav>
     </header>
 
@@ -45,12 +50,17 @@
 .nav-bar {
   background: #fff;
   border-radius: 10px;
-  padding: 10px 0;
+  padding: 10px 16px;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+}
+
+.nav-links {
+  display: flex;
   align-items: center;
   gap: 10px;
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
 }
 
 .nav-link {
