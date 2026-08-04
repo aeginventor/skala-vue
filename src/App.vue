@@ -9,7 +9,7 @@ import CityDock from './components/CityDock.vue'
       <div class="page-header__top">
         <h1>
           <span class="brand-badge"><i class="fa-solid fa-cloud-sun"></i></span>
-          날씨 대시보드
+          날씨 Dock
         </h1>
         <UnitToggler />
       </div>

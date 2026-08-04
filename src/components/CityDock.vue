@@ -6,12 +6,18 @@ import { getWeatherIcon } from '../utils/weatherIcon.js'
 /**
  * CityDock — 맥북 Dock에서 아이디어를 가져온 상단 내비게이션.
  * - 라벨은 hover 없이 아이콘 아래 작은 글자로 항상 보인다.
- * - [피드백 반영] "전체" 버튼은 스크롤 컨테이너(.dock) 안에서 `position: sticky`로
+ * - [버그 수정] "전체" 버튼은 스크롤 컨테이너(.dock) 안에서 `position: sticky`로
  *   왼쪽에 고정된다. "전체" 버튼 하나만 감싼 래퍼(.dock-pinned)를 sticky 컨테이너로
- *   두고, 그 래퍼 자체가 배경색을 채운 채 옆으로 8px(= 원래 flex gap)만큼 더
- *   넓게 그려지도록 padding-right + margin-right(-8px)를 걸었다. 이렇게 하면
- *   스크롤되는 다른 버튼들이 sticky 영역 뒤로 지나갈 때 gap 틈새로 살짝 비쳐 보이는
- *   문제 없이 완전히 가려지고, 다음 버튼과의 간격도 원래와 동일하게 유지된다.
+ *   두고, 그 래퍼가 왼쪽 여백(padding-left)까지 통째로 소유하게 했다. 원래는 이
+ *   여백을 .dock 컨테이너의 padding으로 뒀는데, 스크롤 컨테이너 시작 지점의
+ *   padding이 스크롤에 같이 딸려가는지는 브라우저마다 처리가 달라서, 그 틈으로
+ *   뒤에 있는 도시 버튼이 살짝 비쳐 보이는 경우가 있었다. 여백 자체를 sticky
+ *   래퍼 안으로 옮기니 항상 같은 배경으로 확실히 덮인다. 오른쪽은 padding-right +
+ *   margin-right(-8px) 조합으로 원래 flex gap 자리까지 덮어서 다음 버튼과 겹치지 않는다.
+ * - [버그 수정] 처음엔 스크롤 부드러움을 위해 scroll-snap을 걸어뒀는데, sticky로
+ *   고정된 자식이 있는 상태에서 scroll-snap을 같이 쓰면 마우스를 올리기만 해도
+ *   스냅 지점을 다시 계산하면서 맨 끝으로 스크롤이 튀는 버그가 있었다. 필수 기능이
+ *   아니라서 scroll-snap 자체를 뺐다.
  * - 도시 아이콘은 고정된 위치 핀이 아니라, weatherStore.cities(Home에서 Axios로
  *   갱신한 실시간 값)를 그대로 참조해서 그 도시의 현재 날씨 상태에 맞는 아이콘을
  *   보여준다.
@@ -83,9 +89,8 @@ function isActiveCity(cityId) {
   border: var(--border-thick);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-hard);
-  padding: 12px 16px;
+  padding: 12px 16px 12px 0;
   overflow-x: auto;
-  scroll-snap-type: x proximity;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -110,7 +115,7 @@ function isActiveCity(cityId) {
   z-index: 5;
   flex-shrink: 0;
   background: var(--color-surface);
-  padding-right: 8px;
+  padding: 0 8px 0 16px;
   margin-right: -8px;
 }
 
@@ -140,7 +145,6 @@ function isActiveCity(cityId) {
   color: var(--color-ink);
   text-decoration: none;
   font-size: 17px;
-  scroll-snap-align: start;
   transition: transform 0.15s ease, background-color 0.15s ease;
 }
 
