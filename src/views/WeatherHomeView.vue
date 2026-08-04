@@ -99,6 +99,9 @@ const sortedWeatherList = computed(() => {
 /** [내가 추가한 computed 2] 즐겨찾기 개수 */
 const favoriteCount = computed(() => favoriteCityIds.value.length)
 
+/** [내가 추가한 computed] 검색어로 필터링된 결과 개수. 전체 개수 대비 몇 개가 걸렸는지 바로 보여준다. */
+const filteredCount = computed(() => filteredWeatherList.value.length)
+
 /** [내가 추가한 computed 3] 평균 기온 (섭씨 원본 기준으로 계산 후, 화면 표시 단위에 맞춰 변환) */
 const averageTempCelsius = computed(() => {
   if (weatherStore.cities.length === 0) return 0
@@ -236,6 +239,7 @@ function toggleFavorite(city) {
     <BaseDashboardCard title="지역별 날씨 현황" icon="fa-solid fa-location-dot">
       <div class="toolbar">
         <div class="toolbar__stats">
+          <span><i class="fa-solid fa-list-ul"></i> 검색결과 {{ filteredCount }}개</span>
           <span><i class="fa-solid fa-star"></i> 즐겨찾기 {{ favoriteCount }}개</span>
           <span>
             <i class="fa-solid fa-temperature-half"></i>
