@@ -93,8 +93,27 @@ const visibilityKm = computed(() => {
 
 <template>
   <div class="detail">
-    <div v-show="isLoading" class="detail-card detail-card--empty">
-      <p><i class="fa-solid fa-spinner fa-spin"></i> 날씨 정보를 불러오는 중입니다...</p>
+    <!--
+      로딩 중엔 빈 화면 대신, 실제로 채워질 hero/stat-grid와 같은 배치의 회색 뼈대를
+      보여준다. 레이아웃 클래스(.hero, .stat-grid, .stat-tile)는 실제 콘텐츠와
+      그대로 공유해서, 로딩이 끝나고 실제 값으로 바뀔 때 자리가 안 튄다.
+    -->
+    <div v-show="isLoading" class="detail-card" aria-busy="true" aria-label="날씨 정보를 불러오는 중입니다">
+      <div class="skeleton skeleton--text detail-skeleton__title"></div>
+      <div class="hero">
+        <div class="skeleton skeleton--circle detail-skeleton__hero-icon"></div>
+        <div class="detail-skeleton__hero-text">
+          <div class="skeleton skeleton--text detail-skeleton__line" style="width: 45%"></div>
+          <div class="skeleton detail-skeleton__temp-line"></div>
+          <div class="skeleton skeleton--text detail-skeleton__line" style="width: 30%"></div>
+        </div>
+      </div>
+      <dl class="stat-grid">
+        <div v-for="n in 8" :key="n" class="stat-tile">
+          <dt><div class="skeleton skeleton--text detail-skeleton__line" style="width: 55%"></div></dt>
+          <dd><div class="skeleton skeleton--text detail-skeleton__line" style="width: 70%; height: 15px"></div></dd>
+        </div>
+      </dl>
     </div>
 
     <div v-if="!isLoading && cityDetail" class="detail-card">
@@ -242,6 +261,36 @@ const visibilityKm = computed(() => {
   background: var(--color-sun-bg);
   border: var(--border-thick);
   box-shadow: var(--shadow-hard-sm);
+}
+
+/* 로딩 중 hero__icon 자리를 대신 채우는 스켈레톤. 크기/테두리는 실제 아이콘과 동일하게 맞춘다. */
+.detail-skeleton__hero-icon {
+  width: 112px;
+  height: 112px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: var(--border-thick);
+}
+
+.detail-skeleton__title {
+  width: 55%;
+  height: 18px;
+  margin-bottom: 16px;
+}
+
+.detail-skeleton__hero-text {
+  flex: 1;
+}
+
+.detail-skeleton__line {
+  margin-bottom: 10px;
+}
+
+.detail-skeleton__temp-line {
+  width: 35%;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
 }
 
 .hero__region {

@@ -73,6 +73,37 @@ body {
 }
 
 /**
+ * [로딩 상태] 빈 화면이나 스피너 문구 대신, 실제 콘텐츠와 같은 모양의 회색 뼈대를
+ * 깜빡이게 보여준다. "화면이 멈췄나?" 하는 불안감을 줄여준다. 색은 --color-ink를
+ * 낮은 투명도로 깔아서 은은한 회색을 내고(다른 곳에서 쓰는 .dock-divider와 같은 방식),
+ * opacity를 오갔다갔다 하는 것만으로 애니메이션을 만들어 별도 이미지/그라디언트가 필요 없다.
+ */
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.08;
+  }
+  50% {
+    opacity: 0.22;
+  }
+}
+
+.skeleton {
+  background: var(--color-ink);
+  border-radius: var(--radius-sm);
+  animation: skeleton-pulse 1.3s ease-in-out infinite;
+}
+
+.skeleton--circle {
+  border-radius: 50%;
+}
+
+.skeleton--text {
+  height: 12px;
+  border-radius: 999px;
+}
+
+/**
  * [커스텀 커서] 기본 화살표 대신 해 모양 커서를 쓴다.
  * data URI SVG라 이미지 파일을 따로 안 만들어도 되고, 두 번째 값(auto/pointer)은
  * 혹시 브라우저가 커스텀 커서를 지원하지 않을 때의 대체(fallback)다.

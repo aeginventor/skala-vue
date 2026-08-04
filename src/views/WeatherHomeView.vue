@@ -256,8 +256,21 @@ function toggleFavorite(city) {
         </div>
       </div>
 
-      <!-- v-show: 로딩 문구는 display:none 으로만 감춘다 (DOM에서 완전히 제거하는 v-if와 차이) -->
-      <p v-show="isLoading" class="loading-message"><i class="fa-solid fa-spinner fa-spin"></i> 날씨 정보를 불러오는 중입니다...</p>
+      <!--
+        v-show: 로딩 중엔 display:none 으로만 감춘다 (DOM에서 완전히 제거하는 v-if와 차이).
+        빈 화면 대신 실제 카드와 같은 모양의 회색 뼈대(스켈레톤)를 깜빡여서
+        "멈춘 것 같은" 느낌을 줄인다.
+      -->
+      <ul v-show="isLoading" class="weather-list" aria-busy="true" aria-label="날씨 정보를 불러오는 중입니다">
+        <li v-for="n in 10" :key="n" class="tile-skeleton">
+          <div class="skeleton skeleton--circle tile-skeleton__favorite"></div>
+          <div class="skeleton skeleton--circle tile-skeleton__icon"></div>
+          <div class="skeleton skeleton--text tile-skeleton__name"></div>
+          <div class="skeleton skeleton--text tile-skeleton__region"></div>
+          <div class="skeleton tile-skeleton__temp"></div>
+          <div class="skeleton skeleton--text tile-skeleton__badge"></div>
+        </li>
+      </ul>
 
       <template v-if="!isLoading">
         <p v-if="sortedWeatherList.length === 0" class="empty-message">
@@ -298,6 +311,55 @@ function toggleFavorite(city) {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 16px;
+}
+
+/* WeatherCard(.tile)와 같은 크기/모양으로 맞춰서, 로딩이 끝나고 실제 카드로 바뀔 때 레이아웃이 안 튄다 */
+.tile-skeleton {
+  position: relative;
+  list-style: none;
+  background: var(--color-surface);
+  border: var(--border-thick);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-hard);
+  padding: 18px 16px 16px;
+}
+
+.tile-skeleton__favorite {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+}
+
+.tile-skeleton__icon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 10px;
+}
+
+.tile-skeleton__name {
+  width: 60%;
+  height: 19px;
+  margin-bottom: 8px;
+}
+
+.tile-skeleton__region {
+  width: 40%;
+  margin-bottom: 14px;
+}
+
+.tile-skeleton__temp {
+  width: 45%;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+}
+
+.tile-skeleton__badge {
+  width: 70px;
+  height: 20px;
+  border-radius: 999px;
 }
 
 .toolbar {
@@ -344,8 +406,7 @@ function toggleFavorite(city) {
   background: var(--color-surface);
 }
 
-.empty-message,
-.loading-message {
+.empty-message {
   margin: 0;
   font-size: 13px;
   color: var(--color-muted);
