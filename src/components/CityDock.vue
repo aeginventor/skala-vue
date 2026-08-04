@@ -1,4 +1,5 @@
 <script setup>
+import { ref, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
 import { useWeatherStore } from '../stores/weatherStore.js'
 import { getWeatherIcon } from '../utils/weatherIcon.js'
@@ -21,18 +22,75 @@ import { getWeatherIcon } from '../utils/weatherIcon.js'
  * - 도시 아이콘은 고정된 위치 핀이 아니라, weatherStore.cities(Home에서 Axios로
  *   갱신한 실시간 값)를 그대로 참조해서 그 도시의 현재 날씨 상태에 맞는 아이콘을
  *   보여준다.
+ * - [추가 기능] 트랙패드/스크롤휠 없이도 마우스로 아이콘을 잡고 옆으로 끌면
+ *   가로 스크롤이 되게 했다. mousedown 시점의 좌표·scrollLeft를 기억해뒀다가,
+ *   mousemove 때 그 차이만큼 scrollLeft를 직접 옮긴다. 버튼(RouterLink) 위에서
+ *   시작해도 동작해야 해서, 일정 거리(4px) 이상 움직였을 때만 "드래그"로 인정하고
+ *   그 경우에만 클릭 이벤트를 막아 실수로 페이지 이동이 되지 않게 했다.
  */
 const route = useRoute()
 const weatherStore = useWeatherStore()
+const dockEl = ref(null)
+
+let isPointerDown = false
+let dragMoved = false
+let dragStartX = 0
+let dragStartScrollLeft = 0
 
 function isActiveCity(cityId) {
   return route.params.cityId === cityId
 }
+
+function handleDragStart(event) {
+  if (event.button !== 0 || !dockEl.value) return
+  isPointerDown = true
+  dragMoved = false
+  dragStartX = event.pageX
+  dragStartScrollLeft = dockEl.value.scrollLeft
+  // 링크를 마우스로 끌 때 브라우저가 기본으로 하는 "링크 드래그"/텍스트 선택을 막는다
+  event.preventDefault()
+  window.addEventListener('mousemove', handleDragMove)
+  window.addEventListener('mouseup', handleDragEnd)
+}
+
+function handleDragMove(event) {
+  if (!isPointerDown || !dockEl.value) return
+  const delta = event.pageX - dragStartX
+  if (Math.abs(delta) > 4) dragMoved = true
+  if (dragMoved) {
+    dockEl.value.scrollLeft = dragStartScrollLeft - delta
+  }
+}
+
+function handleDragEnd() {
+  isPointerDown = false
+  window.removeEventListener('mousemove', handleDragMove)
+  window.removeEventListener('mouseup', handleDragEnd)
+}
+
+/** 드래그였다면(버튼을 잡고 옆으로 끌었다면) 그 클릭이 라우터 이동으로 이어지지 않게 막는다 */
+function handleDockClickCapture(event) {
+  if (dragMoved) {
+    event.preventDefault()
+    event.stopPropagation()
+  }
+}
+
+onBeforeUnmount(() => {
+  window.removeEventListener('mousemove', handleDragMove)
+  window.removeEventListener('mouseup', handleDragEnd)
+})
 </script>
 
 <template>
   <div class="dock-wrap">
-    <nav class="dock" aria-label="지역 바로가기 Dock">
+    <nav
+      ref="dockEl"
+      class="dock"
+      aria-label="지역 바로가기 Dock"
+      @mousedown="handleDragStart"
+      @click.capture="handleDockClickCapture"
+    >
       <div class="dock-pinned">
         <RouterLink
           to="/"
