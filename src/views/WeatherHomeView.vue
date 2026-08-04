@@ -5,20 +5,22 @@ import BaseDashboardCard from '../components/BaseDashboardCard.vue'
 import SearchBar from '../components/SearchBar.vue'
 import WeatherCard from '../components/WeatherCard.vue'
 import { getSubjectParticle } from '../utils/josa.js'
-import { weatherMockData } from '../data/weatherMockData.js'
 import { fetchCurrentWeather, mapWeatherResponse } from '../api/weatherApi.js'
 import { useConfigStore } from '../stores/configStore.js'
+import { useWeatherStore } from '../stores/weatherStore.js'
 
 /**
  * WeatherHomeView
  * - 로직(반응형 상태 / computed / watch / watchEffect / Axios)은 이전 미션과 이어지고,
  *   여기서부터는 과제 요구사항 밖에서 "내가 직접 판단해서" 추가한 기능들이다.
  *   (즐겨찾기, 정렬, 통계 computed, localStorage 저장)
+ * - 도시 목록 자체는 이제 weatherStore(Pinia)가 소유한다. Dock/Detail이 같은 데이터를
+ *   보게 하기 위해서다 (자세한 이유는 stores/weatherStore.js 주석 참고).
  */
 const router = useRouter()
 const configStore = useConfigStore()
+const weatherStore = useWeatherStore()
 
-const weatherList = ref(weatherMockData)
 const searchQuery = ref('')
 const selectedCityInfo = ref(null)
 
@@ -45,36 +47,53 @@ function loadFavoritesFromStorage() {
 
 const favoriteCityIds = ref(loadFavoritesFromStorage())
 
-/** [내가 추가한 반응형 변수 2] 정렬 기준 (이름순 / 기온순) */
+/** [내가 추가한 반응형 변수 2] 정렬 기준 (이름순 / 기온순 / 날씨별) */
 const sortOrder = ref('name')
 
 const filteredWeatherList = computed(() => {
   const keyword = searchQuery.value.trim()
-  if (!keyword) return weatherList.value
-  return weatherList.value.filter((city) => city.name.includes(keyword))
+  if (!keyword) return weatherStore.cities
+  return weatherStore.cities.filter((city) => city.name.includes(keyword))
 })
 
 /**
  * [내가 추가한 computed 1] 검색 필터링 결과를 정렬 기준에 맞게 다시 정렬.
- * filteredWeatherList 를 그대로 바꾸지 않고 얕은 복사([...list])한 뒤 정렬한다.
- * Array.prototype.sort() 는 원본 배열을 직접 변경(mutate)하는 함수라서,
- * 복사 없이 그냥 정렬하면 filteredWeatherList(원본 참조)까지 같이 뒤바뀌어 버린다.
+ * - filteredWeatherList 를 그대로 바꾸지 않고 얕은 복사([...list])한 뒤 정렬한다.
+ *   Array.prototype.sort() 는 원본 배열을 직접 변경(mutate)하는 함수라서,
+ *   복사 없이 그냥 정렬하면 filteredWeatherList(원본 참조)까지 같이 뒤바뀌어 버린다.
+ * - [피드백 반영] 즐겨찾기가 정렬에 전혀 반영되지 않아서, 즐겨찾기 도시를 항상 맨 앞으로
+ *   오게 만들었다. 정렬 기준(이름/기온/날씨)은 "즐겨찾기 그룹"과 "나머지 그룹" 각각의
+ *   내부 순서에만 적용된다.
  */
 function compareBySortOrder(a, b) {
   if (sortOrder.value === 'temp') return b.temp - a.temp // 높은 기온 순
+  if (sortOrder.value === 'weather') return a.status.localeCompare(b.status, 'ko')
   return a.name.localeCompare(b.name, 'ko') // 이름순
 }
 
-const sortedWeatherList = computed(() => [...filteredWeatherList.value].sort(compareBySortOrder))
+const sortedWeatherList = computed(() => {
+  const favorites = []
+  const others = []
+  for (const city of filteredWeatherList.value) {
+    if (favoriteCityIds.value.includes(city.id)) {
+      favorites.push(city)
+    } else {
+      others.push(city)
+    }
+  }
+  favorites.sort(compareBySortOrder)
+  others.sort(compareBySortOrder)
+  return [...favorites, ...others]
+})
 
 /** [내가 추가한 computed 2] 즐겨찾기 개수 */
 const favoriteCount = computed(() => favoriteCityIds.value.length)
 
 /** [내가 추가한 computed 3] 평균 기온 (섭씨 원본 기준으로 계산 후, 화면 표시 단위에 맞춰 변환) */
 const averageTempCelsius = computed(() => {
-  if (weatherList.value.length === 0) return 0
-  const total = weatherList.value.reduce((sum, city) => sum + city.temp, 0)
-  return Math.round(total / weatherList.value.length)
+  if (weatherStore.cities.length === 0) return 0
+  const total = weatherStore.cities.reduce((sum, city) => sum + city.temp, 0)
+  return Math.round(total / weatherStore.cities.length)
 })
 const averageDisplayTemp = computed(() => {
   if (configStore.unit === 'fahrenheit') {
@@ -88,12 +107,12 @@ const averageDisplayTemp = computed(() => {
  * reduce로 배열을 한 번만 훑어서 찾는다.
  */
 const hottestCity = computed(() => {
-  if (weatherList.value.length === 0) return null
-  return weatherList.value.reduce((hottest, city) => (city.temp > hottest.temp ? city : hottest))
+  if (weatherStore.cities.length === 0) return null
+  return weatherStore.cities.reduce((hottest, city) => (city.temp > hottest.temp ? city : hottest))
 })
 const coldestCity = computed(() => {
-  if (weatherList.value.length === 0) return null
-  return weatherList.value.reduce((coldest, city) => (city.temp < coldest.temp ? city : coldest))
+  if (weatherStore.cities.length === 0) return null
+  return weatherStore.cities.reduce((coldest, city) => (city.temp < coldest.temp ? city : coldest))
 })
 
 /** 위 두 computed를 조합해서 자연스러운 한 문장으로 만든다. josa.js를 여기서도 재사용. */
@@ -121,7 +140,7 @@ watchEffect(() => {
 
 /** [내가 추가한 watch 1] 정렬 기준이 바뀔 때 콘솔 로그 */
 watch(sortOrder, (newOrder) => {
-  const labelMap = { temp: '기온순', name: '이름순' }
+  const labelMap = { temp: '기온순', weather: '날씨별', name: '이름순' }
   console.log(`[watch 감지] 정렬 기준이 '${labelMap[newOrder]}'으로 바뀌었습니다.`)
 })
 
@@ -148,12 +167,12 @@ watch(
 onMounted(async () => {
   try {
     const liveWeatherList = await Promise.all(
-      weatherMockData.map(async (city) => {
+      weatherStore.cities.map(async (city) => {
         const apiData = await fetchCurrentWeather(city.lat, city.lon)
         return mapWeatherResponse(apiData, city)
       })
     )
-    weatherList.value = liveWeatherList
+    weatherStore.setCities(liveWeatherList)
   } catch (error) {
     fetchError.value = '실시간 날씨 데이터를 불러오지 못해 임시 데이터로 표시합니다.'
     console.error('[Axios 에러] OpenWeatherMap 호출 실패:', error)
@@ -166,9 +185,16 @@ function handleUpdateQuery(newQuery) {
   searchQuery.value = newQuery
 }
 
+/**
+ * [피드백 반영] 카드를 클릭하면 상세 페이지로 바로 이동하도록 바꿨다.
+ * 다만 selectedCityInfo 는 여전히 갱신해서, watch(selectedCityInfo) 콘솔 로그와
+ * 상태바 문구 로직은 그대로 유지된다 (페이지를 벗어나기 직전에 한 번 찍힌다).
+ */
 function handleSelectCard(city) {
   selectedCityInfo.value = city
+  router.push(`/weather/${city.id}`)
 }
+
 function handleClickDetail(city) {
   router.push(`/weather/${city.id}`)
 }
@@ -211,6 +237,7 @@ function toggleFavorite(city) {
           <select id="sort-order" v-model="sortOrder">
             <option value="name">이름순</option>
             <option value="temp">기온순</option>
+            <option value="weather">날씨별</option>
           </select>
         </div>
       </div>

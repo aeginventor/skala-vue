@@ -71,3 +71,29 @@ body {
   transform: translate(3px, 3px);
   box-shadow: var(--shadow-hard-press) !important;
 }
+
+/**
+ * [커스텀 커서] 기본 화살표 대신 해 모양 커서를 쓴다.
+ * data URI SVG라 이미지 파일을 따로 안 만들어도 되고, 두 번째 값(auto/pointer)은
+ * 혹시 브라우저가 커스텀 커서를 지원하지 않을 때의 대체(fallback)다.
+ * 입력창(input/textarea)만 원래 텍스트 커서로 되돌려서, "여기 타이핑할 수 있다"는
+ * 신호는 그대로 유지했다.
+ */
+body {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Ccircle cx='14' cy='14' r='6' fill='%23FFB100' stroke='%2322223B' stroke-width='2'/%3E%3Cg stroke='%2322223B' stroke-width='2' stroke-linecap='round'%3E%3Cline x1='14' y1='1' x2='14' y2='5'/%3E%3Cline x1='14' y1='23' x2='14' y2='27'/%3E%3Cline x1='1' y1='14' x2='5' y2='14'/%3E%3Cline x1='23' y1='14' x2='27' y2='14'/%3E%3Cline x1='4.5' y1='4.5' x2='7.3' y2='7.3'/%3E%3Cline x1='20.7' y1='20.7' x2='23.5' y2='23.5'/%3E%3Cline x1='4.5' y1='23.5' x2='7.3' y2='20.7'/%3E%3Cline x1='20.7' y1='7.3' x2='23.5' y2='4.5'/%3E%3C/g%3E%3C/svg%3E")
+    14 14, auto;
+}
+
+button,
+a,
+li,
+select,
+.ink-pressable {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Ccircle cx='15' cy='15' r='7' fill='%23FF6B4A' stroke='%2322223B' stroke-width='2'/%3E%3Cg stroke='%2322223B' stroke-width='2' stroke-linecap='round'%3E%3Cline x1='15' y1='1' x2='15' y2='5'/%3E%3Cline x1='15' y1='25' x2='15' y2='29'/%3E%3Cline x1='1' y1='15' x2='5' y2='15'/%3E%3Cline x1='25' y1='15' x2='29' y2='15'/%3E%3C/g%3E%3C/svg%3E")
+    15 15, pointer;
+}
+
+input,
+textarea {
+  cursor: text;
+}

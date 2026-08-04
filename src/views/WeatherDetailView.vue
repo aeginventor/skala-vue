@@ -1,7 +1,6 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { findCityById } from '../data/weatherMockData.js'
 import {
   fetchCurrentWeather,
   fetchForecast,
@@ -9,33 +8,54 @@ import {
   mapForecastResponse
 } from '../api/weatherApi.js'
 import { useConfigStore } from '../stores/configStore.js'
+import { useWeatherStore } from '../stores/weatherStore.js'
 import { getWeatherIcon } from '../utils/weatherIcon.js'
 import { formatLocalTime } from '../utils/formatTime.js'
 
+/**
+ * WeatherDetailView
+ * - 라우트 경로: /weather/:cityId
+ *
+ * [버그 수정] Dock에서 도시 A 상세를 보다가 도시 B를 클릭하면 URL은 바뀌는데
+ * 화면이 그대로였던 이유: 두 경로가 같은 라우트 레코드(`/weather/:cityId`)를 쓰기
+ * 때문에 Vue Router가 컴포넌트 인스턴스를 "새로 만들지 않고 재사용"한다. 그런데
+ * 데이터 로딩을 onMounted 안에만 넣어뒀으니, 이미 마운트된 상태에서는 파라미터가
+ * 바뀌어도 다시 실행될 일이 없었다. 그래서 onMounted 대신 route.params.cityId를
+ * `watch`로 감시하고, immediate:true로 최초 진입 시에도 한 번 실행되게 했다.
+ */
 const route = useRoute()
 const cityDetail = ref(null)
 const forecastList = ref([])
 const configStore = useConfigStore()
+const weatherStore = useWeatherStore()
 
 const isLoading = ref(true)
 const fetchError = ref(null)
 
-onMounted(async () => {
-  const baseCity = findCityById(route.params.cityId)
+async function loadCityDetail(cityId) {
+  const baseCity = weatherStore.getCityById(cityId)
+
+  // 도시가 바뀔 때마다 이전 도시의 잔상(예보 목록, 에러 배너)이 잠깐이라도 남지 않도록 초기화
+  isLoading.value = true
+  fetchError.value = null
+  forecastList.value = []
 
   if (!baseCity) {
+    cityDetail.value = null
     isLoading.value = false
     return
   }
 
-  cityDetail.value = baseCity // 우선 Mock 값으로 화면을 채워 빈 화면 방지
+  cityDetail.value = baseCity // 우선 (이전에 캐시된 값이 있다면 그 값으로) 화면을 채워 빈 화면 방지
 
   try {
     const [currentWeatherData, forecastData] = await Promise.all([
       fetchCurrentWeather(baseCity.lat, baseCity.lon),
       fetchForecast(baseCity.lat, baseCity.lon)
     ])
-    cityDetail.value = mapWeatherResponse(currentWeatherData, baseCity)
+    const mergedCity = mapWeatherResponse(currentWeatherData, baseCity)
+    cityDetail.value = mergedCity
+    weatherStore.updateCity(mergedCity) // Dock/Home도 최신값을 보도록 스토어에 반영
     forecastList.value = mapForecastResponse(forecastData)
   } catch (error) {
     fetchError.value = '실시간 날씨 데이터를 불러오지 못해 임시 데이터로 표시합니다.'
@@ -43,7 +63,9 @@ onMounted(async () => {
   } finally {
     isLoading.value = false
   }
-})
+}
+
+watch(() => route.params.cityId, loadCityDetail, { immediate: true })
 
 const displayTemp = computed(() => {
   const rawTemp = cityDetail.value?.temp
