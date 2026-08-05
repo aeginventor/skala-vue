@@ -1,7 +1,8 @@
 <script setup>
 import { computed } from 'vue'
 import { useConfigStore } from '../stores/configStore.js'
-import { getWeatherIcon, getWeatherTheme } from '../utils/weatherIcon.js'
+import { getWeatherTheme } from '../utils/weatherIcon.js'
+import WeatherGlyph from './WeatherGlyph.vue'
 
 /**
  * SelectedCityPanel — 목록에서 고른 도시를 화면 하단에 늘 보이는 바로 요약해서 보여준다.
@@ -27,7 +28,6 @@ const configStore = useConfigStore()
 
 // 선택된 도시가 없을 때(city === null) 그려질 일이 없는 값들이라 옵셔널 체이닝으로 넘긴다
 const theme = computed(() => (city ? getWeatherTheme(city.status) : null))
-const icon = computed(() => (city ? getWeatherIcon(city.status) : ''))
 
 const displayTemp = computed(() => {
   const rawTemp = city?.temp
@@ -51,7 +51,7 @@ function handleDetailClick() {
           class="selected-bar__icon-wrap"
           :style="{ '--panel-bg': theme.bg, '--panel-accent': theme.accent }"
         >
-          <i :class="['fa-solid', icon]" class="selected-bar__icon"></i>
+          <WeatherGlyph :status="city.status" class="selected-bar__icon" />
         </div>
 
         <div class="selected-bar__info">

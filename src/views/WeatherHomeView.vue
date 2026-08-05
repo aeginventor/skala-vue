@@ -338,6 +338,21 @@ function toggleFavorite(city) {
   padding: 18px 16px 16px;
 }
 
+/* 기울기·모서리도 실제 카드와 같은 주기로 맞춰야 로딩이 끝나는 순간 카드가 움찔하지 않는다 */
+.tile-skeleton:nth-child(3n + 1) {
+  rotate: -0.6deg;
+}
+
+.tile-skeleton:nth-child(3n + 2) {
+  rotate: 0.5deg;
+  border-radius: var(--radius-lg-b);
+}
+
+.tile-skeleton:nth-child(3n + 3) {
+  rotate: -0.25deg;
+  border-radius: var(--radius-lg-c);
+}
+
 .tile-skeleton__favorite {
   position: absolute;
   top: 12px;

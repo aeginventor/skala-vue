@@ -2,7 +2,7 @@
 import { ref, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useWeatherStore } from '../stores/weatherStore.js'
-import { getWeatherIcon } from '../utils/weatherIcon.js'
+import WeatherGlyph from './WeatherGlyph.vue'
 
 /**
  * CityDock — 맥북 Dock에서 아이디어를 가져온 상단 내비게이션.
@@ -129,7 +129,7 @@ onBeforeUnmount(() => {
         :class="{ 'dock-item--active': isActiveCity(city.id) }"
         :title="city.name"
       >
-        <i :class="['fa-solid', getWeatherIcon(city.status)]"></i>
+        <WeatherGlyph :status="city.status" />
         <span class="dock-item__label">{{ city.name }}</span>
       </RouterLink>
 
@@ -252,6 +252,18 @@ onBeforeUnmount(() => {
   font-size: 17px;
   padding: 0;
   transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+/*
+ * 한 줄에 촘촘히 붙는 버튼들이라 카드처럼 기울이면 어수선해진다. 모서리 굴림만
+ * 두세 벌로 돌려 써서, 줄지어 있어도 똑같이 찍어낸 느낌은 나지 않게 한다.
+ */
+.dock-item:nth-child(2n) {
+  border-radius: 9px 12px 10px 11px;
+}
+
+.dock-item:nth-child(3n) {
+  border-radius: 12px 10px 11px 9px;
 }
 
 .dock-item__label {

@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { getWeatherCategory } from '../utils/weatherIcon.js'
+import { CLOUD, BOLT, BOLT_VIEWBOX } from '../utils/glyphPaths.js'
 
 /**
  * WeatherAnimation
@@ -52,13 +53,13 @@ const snowflakes = Array.from({ length: 8 }, (_, i) => ({
 
     <!-- 구름: 구름 두 덩이가 서로 다른 속도로 둥둥 지나감 -->
     <template v-else-if="category === 'cloud'">
-      <i class="fa-solid fa-cloud cloud cloud--back"></i>
-      <i class="fa-solid fa-cloud cloud cloud--front"></i>
+      <svg class="cloud cloud--back" viewBox="0 0 48 48"><path :d="CLOUD" /></svg>
+      <svg class="cloud cloud--front" viewBox="0 0 48 48"><path :d="CLOUD" /></svg>
     </template>
 
     <!-- 비: 구름 아래로 빗방울이 계속 떨어짐 -->
     <template v-else-if="category === 'rain'">
-      <i class="fa-solid fa-cloud cloud cloud--rain"></i>
+      <svg class="cloud cloud--rain" viewBox="0 0 48 48"><path :d="CLOUD" /></svg>
       <span
         v-for="(drop, i) in raindrops"
         :key="i"
@@ -69,19 +70,19 @@ const snowflakes = Array.from({ length: 8 }, (_, i) => ({
 
     <!-- 눈: 눈송이가 좌우로 살랑이며 천천히 떨어짐 -->
     <template v-else-if="category === 'snow'">
-      <i class="fa-solid fa-cloud cloud cloud--snow"></i>
-      <i
+      <svg class="cloud cloud--snow" viewBox="0 0 48 48"><path :d="CLOUD" /></svg>
+      <span
         v-for="(flake, i) in snowflakes"
         :key="i"
-        class="fa-solid fa-snowflake snowflake"
+        class="snowflake"
         :style="{ left: flake.left + '%', animationDelay: flake.delay + 's', animationDuration: flake.duration + 's' }"
-      ></i>
+      ></span>
     </template>
 
     <!-- 뇌우: 먹구름 + 번쩍이는 번개 + 굵은 비 -->
     <template v-else-if="category === 'storm'">
-      <i class="fa-solid fa-cloud cloud cloud--storm"></i>
-      <i class="fa-solid fa-bolt bolt"></i>
+      <svg class="cloud cloud--storm" viewBox="0 0 48 48"><path :d="CLOUD" /></svg>
+      <svg class="bolt" :viewBox="BOLT_VIEWBOX"><path :d="BOLT" /></svg>
       <span
         v-for="(drop, i) in raindrops.slice(0, 7)"
         :key="i"
@@ -181,16 +182,24 @@ const snowflakes = Array.from({ length: 8 }, (_, i) => ({
 }
 
 /* ---------- 구름 / 비 / 눈 / 뇌우 공통 ---------- */
+/*
+ * 카드/Dock 아이콘과 똑같은 구름 실루엣(glyphPaths.CLOUD)을 크게 그린 것.
+ * 아이콘 폰트일 때는 색을 color + text-stroke로 줬지만, SVG라 fill/stroke로 준다.
+ */
 .cloud {
   position: absolute;
-  color: #ffffff;
-  -webkit-text-stroke: 1.5px var(--color-ink);
-  font-size: 32px;
+  width: 40px;
+  height: 40px;
+  fill: #fff;
+  stroke: var(--color-ink);
+  stroke-width: 2.6;
+  stroke-linejoin: round;
 }
 
 .cloud--back {
   top: 18px;
-  font-size: 24px;
+  width: 30px;
+  height: 30px;
   opacity: 0.7;
   animation: drift-back 10s linear infinite;
 }
@@ -255,11 +264,14 @@ const snowflakes = Array.from({ length: 8 }, (_, i) => ({
   }
 }
 
+/* 카드 아이콘의 눈 표현과 맞춰 동그란 눈송이로 그린다 */
 .snowflake {
   position: absolute;
   top: 34px;
-  color: var(--color-snow);
-  font-size: 10px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-snow);
   animation-name: snow-fall, snow-sway;
   animation-timing-function: linear, ease-in-out;
   animation-iteration-count: infinite, infinite;
@@ -289,9 +301,12 @@ const snowflakes = Array.from({ length: 8 }, (_, i) => ({
   top: 48px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 22px;
-  color: oklch(84% 0.16 95);
-  -webkit-text-stroke: 1px var(--color-ink);
+  width: 17px;
+  height: 24px;
+  fill: oklch(84% 0.16 95);
+  stroke: var(--color-ink);
+  stroke-width: 2;
+  stroke-linejoin: round;
   animation: flash 2.6s ease-in-out infinite;
 }
 

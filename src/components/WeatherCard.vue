@@ -1,7 +1,8 @@
 <script setup>
 import { computed } from 'vue'
 import { useConfigStore } from '../stores/configStore.js'
-import { getWeatherIcon, getWeatherTheme } from '../utils/weatherIcon.js'
+import { getWeatherTheme } from '../utils/weatherIcon.js'
+import WeatherGlyph from './WeatherGlyph.vue'
 
 /**
  * WeatherCard — "갤러리 타일"로 재설계.
@@ -35,7 +36,6 @@ const emit = defineEmits(['select-card', 'click-detail', 'toggle-favorite'])
 const configStore = useConfigStore()
 
 const theme = computed(() => getWeatherTheme(city.status))
-const icon = computed(() => getWeatherIcon(city.status))
 
 /** city.temp 원본은 항상 섭씨. 화면 표시 시점에만 configStore.unit 에 따라 변환. */
 const displayTemp = computed(() => {
@@ -81,7 +81,7 @@ function isHot(rawCelsiusTemp) {
     </button>
 
     <div class="tile__icon-wrap">
-      <i :class="['fa-solid', icon]" class="tile__icon"></i>
+      <WeatherGlyph :status="city.status" class="tile__icon" />
     </div>
 
     <p class="tile__name">{{ city.name }}</p>
@@ -122,6 +122,33 @@ function isHot(rawCelsiusTemp) {
   transition: transform 0.15s ease;
 }
 
+/*
+ * 벽에 손으로 붙인 스티커처럼 보이도록, 카드마다 모서리·기울기·테두리 굵기·그림자를
+ * 조금씩 다르게 준다. 3주기로 돌리면 4열 그리드에서 줄마다 패턴이 어긋나서
+ * "세로줄이 반복된다"는 티가 안 난다.
+ * 기울기는 1°를 넘기지 않는다 — 넘어가면 손맛이 아니라 깨진 레이아웃으로 보인다.
+ * 기울기에 transform 대신 rotate 속성을 쓰는 이유: 아래 hover(transform)와 눌림
+ * 효과(.ink-pressable:active)가 서로 덮어쓰지 않고 자연스럽게 합성되기 때문이다.
+ */
+.tile:nth-child(3n + 1) {
+  rotate: -0.6deg;
+  border-width: 3px 2.5px 3.5px 3px;
+}
+
+.tile:nth-child(3n + 2) {
+  rotate: 0.5deg;
+  border-radius: var(--radius-lg-b);
+  border-width: 3.5px 3px 2.5px 3px;
+  box-shadow: 4px 5px 0 var(--color-ink);
+}
+
+.tile:nth-child(3n + 3) {
+  rotate: -0.25deg;
+  border-radius: var(--radius-lg-c);
+  border-width: 2.5px 3px 3px 3.5px;
+  box-shadow: 5px 4px 0 var(--color-ink);
+}
+
 .tile:hover {
   transform: translateY(-4px) rotate(-1deg);
 }
@@ -131,7 +158,12 @@ function isHot(rawCelsiusTemp) {
   outline-offset: 3px;
 }
 
-.tile--favorite {
+/*
+ * 위 nth-child 규칙(.tile:nth-child(...))이 클래스 하나짜리 선택자보다 특이도가 높아서,
+ * 그냥 .tile--favorite 로 두면 즐겨찾기 카드의 노란 그림자가 카드 위치에 따라 먹히다
+ * 말다 한다. 클래스를 겹쳐 써서 특이도를 맞추고, 뒤에 선언해 확실히 이기게 한다.
+ */
+.tile.tile--favorite {
   border-color: var(--color-favorite);
   box-shadow: 5px 5px 0 var(--color-favorite);
 }

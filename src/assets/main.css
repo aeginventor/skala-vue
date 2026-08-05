@@ -54,9 +54,16 @@ body {
 
   --color-favorite: var(--color-sun);
 
-  --radius-lg: 24px;
-  --radius-md: 16px;
-  --radius-sm: 10px;
+  /*
+   * 네 모서리를 일부러 조금씩 다르게 잡아 자를 대고 그린 느낌을 없앤다.
+   * -b/-c 변형을 둔 이유: 한 벌만 쓰면 모든 카드가 "똑같이" 찌그러져서 결국 다시
+   * 균일해 보인다. 카드 그리드·Dock에서 nth-child로 돌려 써야 손그림처럼 보인다.
+   */
+  --radius-lg: 26px 21px 25px 22px;
+  --radius-lg-b: 21px 26px 22px 25px;
+  --radius-lg-c: 24px 25px 20px 26px;
+  --radius-md: 17px 14px 18px 15px;
+  --radius-sm: 11px 9px 12px 10px;
 
   --border-thick: 3px solid var(--color-ink);
   --border-thin: 2px solid var(--color-ink);

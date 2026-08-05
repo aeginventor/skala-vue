@@ -1,19 +1,23 @@
 /**
  * OpenWeatherMap이 한글(lang=kr)로 주는 날씨 설명("맑음", "튼구름", "약한 비" 등)을
- * Font Awesome 아이콘 + 카툰풍 테마 색상 한 쌍으로 매핑한다.
+ * 손그림 아이콘(glyph) + 카툰풍 테마 색상 한 쌍으로 매핑한다.
  * 아이콘/배경색을 따로따로 매핑하면 "이 날씨는 이 색"이라는 규칙이 두 곳에 흩어지므로,
  * 하나의 규칙 테이블(CONDITION_RULES)에서 둘 다 뽑아 쓰도록 합쳤다.
+ *
+ * glyph는 WeatherGlyph.vue가 그리는 그림의 종류다. category(정렬용 대분류)와 따로 두는
+ * 이유는 안개 때문 — 안개/연무/황사는 정렬상 '구름'으로 묶이는 게 맞지만, 그림은 구름과
+ * 구분돼야 한다. 둘을 한 필드로 합치면 이 구분이 사라진다.
  */
 const CONDITION_RULES = [
-  { category: 'snow', keywords: ['눈'], icon: 'fa-snowflake', bg: 'var(--color-snow-bg)', accent: 'var(--color-snow)' },
-  { category: 'storm', keywords: ['뇌우', '천둥'], icon: 'fa-bolt', bg: 'var(--color-storm-bg)', accent: 'var(--color-storm)' },
-  { category: 'rain', keywords: ['비', '소나기', '이슬비'], icon: 'fa-cloud-showers-heavy', bg: 'var(--color-rain-bg)', accent: 'var(--color-rain)' },
-  { category: 'cloud', keywords: ['안개', '연무', '박무', '황사', '먼지'], icon: 'fa-smog', bg: 'var(--color-cloud-bg)', accent: 'var(--color-cloud)' },
-  { category: 'cloud', keywords: ['흐림', '구름'], icon: 'fa-cloud', bg: 'var(--color-cloud-bg)', accent: 'var(--color-cloud)' },
-  { category: 'sun', keywords: ['맑음'], icon: 'fa-sun', bg: 'var(--color-sun-bg)', accent: 'var(--color-sun)' }
+  { category: 'snow', keywords: ['눈'], glyph: 'snow', bg: 'var(--color-snow-bg)', accent: 'var(--color-snow)' },
+  { category: 'storm', keywords: ['뇌우', '천둥'], glyph: 'storm', bg: 'var(--color-storm-bg)', accent: 'var(--color-storm)' },
+  { category: 'rain', keywords: ['비', '소나기', '이슬비'], glyph: 'rain', bg: 'var(--color-rain-bg)', accent: 'var(--color-rain)' },
+  { category: 'cloud', keywords: ['안개', '연무', '박무', '황사', '먼지'], glyph: 'fog', bg: 'var(--color-cloud-bg)', accent: 'var(--color-cloud)' },
+  { category: 'cloud', keywords: ['흐림', '구름'], glyph: 'cloud', bg: 'var(--color-cloud-bg)', accent: 'var(--color-cloud)' },
+  { category: 'sun', keywords: ['맑음'], glyph: 'sun', bg: 'var(--color-sun-bg)', accent: 'var(--color-sun)' }
 ]
 
-const DEFAULT_RULE = { category: 'sun', icon: 'fa-cloud-sun', bg: 'var(--color-sun-bg)', accent: 'var(--color-sun)' }
+const DEFAULT_RULE = { category: 'sun', glyph: 'sun', bg: 'var(--color-sun-bg)', accent: 'var(--color-sun)' }
 
 /**
  * "날씨별 정렬"에서 카테고리가 뜨는 순서. 인덱스가 작을수록 앞쪽에 온다.
@@ -28,9 +32,9 @@ function matchRule(statusText) {
   )
 }
 
-/** @param {string} statusText @returns {string} Font Awesome 아이콘 클래스명 */
-export function getWeatherIcon(statusText) {
-  return matchRule(statusText).icon
+/** @param {string} statusText @returns {string} WeatherGlyph가 그릴 그림 종류 */
+export function getWeatherGlyph(statusText) {
+  return matchRule(statusText).glyph
 }
 
 /** @param {string} statusText @returns {{bg: string, accent: string}} 카드 배경색 / 포인트색 CSS 변수 */

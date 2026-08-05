@@ -9,7 +9,7 @@ import {
 } from '../api/weatherApi.js'
 import { useConfigStore } from '../stores/configStore.js'
 import { useWeatherStore } from '../stores/weatherStore.js'
-import { getWeatherIcon } from '../utils/weatherIcon.js'
+import WeatherGlyph from '../components/WeatherGlyph.vue'
 import { formatLocalTime } from '../utils/formatTime.js'
 import WeatherAnimation from '../components/WeatherAnimation.vue'
 
@@ -182,7 +182,7 @@ const visibilityKm = computed(() => {
         <div class="forecast-strip">
           <div v-for="slot in forecastList" :key="slot.time" class="forecast-slot">
             <span class="forecast-slot__time">{{ slot.time }}</span>
-            <i :class="['fa-solid', getWeatherIcon(slot.status)]" class="forecast-slot__icon"></i>
+            <WeatherGlyph :status="slot.status" class="forecast-slot__icon" />
             <span class="forecast-slot__temp">{{ displayForecastTemp(slot.temp) }}{{ configStore.unitSymbol }}</span>
           </div>
         </div>
