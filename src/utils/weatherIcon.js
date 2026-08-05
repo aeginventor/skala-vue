@@ -8,16 +8,19 @@
  * 이유는 안개 때문 — 안개/연무/황사는 정렬상 '구름'으로 묶이는 게 맞지만, 그림은 구름과
  * 구분돼야 한다. 둘을 한 필드로 합치면 이 구분이 사라진다.
  */
+const INK = 'var(--color-ink)'
+const PAPER = 'var(--color-bg)'
+
 const CONDITION_RULES = [
-  { category: 'snow', keywords: ['눈'], glyph: 'snow', bg: 'var(--color-snow-bg)', accent: 'var(--color-snow)' },
-  { category: 'storm', keywords: ['뇌우', '천둥'], glyph: 'storm', bg: 'var(--color-storm-bg)', accent: 'var(--color-storm)' },
-  { category: 'rain', keywords: ['비', '소나기', '이슬비'], glyph: 'rain', bg: 'var(--color-rain-bg)', accent: 'var(--color-rain)' },
-  { category: 'cloud', keywords: ['안개', '연무', '박무', '황사', '먼지'], glyph: 'fog', bg: 'var(--color-cloud-bg)', accent: 'var(--color-cloud)' },
-  { category: 'cloud', keywords: ['흐림', '구름'], glyph: 'cloud', bg: 'var(--color-cloud-bg)', accent: 'var(--color-cloud)' },
-  { category: 'sun', keywords: ['맑음'], glyph: 'sun', bg: 'var(--color-sun-bg)', accent: 'var(--color-sun)' }
+  { category: 'snow', keywords: ['눈'], glyph: 'snow', bg: 'var(--color-snow-bg)', accent: 'var(--color-snow)', onAccent: INK },
+  { category: 'storm', keywords: ['뇌우', '천둥'], glyph: 'storm', bg: 'var(--color-storm-bg)', accent: 'var(--color-storm)', onAccent: PAPER },
+  { category: 'rain', keywords: ['비', '소나기', '이슬비'], glyph: 'rain', bg: 'var(--color-rain-bg)', accent: 'var(--color-rain)', onAccent: PAPER },
+  { category: 'cloud', keywords: ['안개', '연무', '박무', '황사', '먼지'], glyph: 'fog', bg: 'var(--color-cloud-bg)', accent: 'var(--color-cloud)', onAccent: PAPER },
+  { category: 'cloud', keywords: ['흐림', '구름'], glyph: 'cloud', bg: 'var(--color-cloud-bg)', accent: 'var(--color-cloud)', onAccent: PAPER },
+  { category: 'sun', keywords: ['맑음'], glyph: 'sun', bg: 'var(--color-sun-bg)', accent: 'var(--color-sun)', onAccent: INK }
 ]
 
-const DEFAULT_RULE = { category: 'sun', glyph: 'sun', bg: 'var(--color-sun-bg)', accent: 'var(--color-sun)' }
+const DEFAULT_RULE = { category: 'sun', glyph: 'sun', bg: 'var(--color-sun-bg)', accent: 'var(--color-sun)', onAccent: INK }
 
 /**
  * "날씨별 정렬"에서 카테고리가 뜨는 순서. 인덱스가 작을수록 앞쪽에 온다.
@@ -37,10 +40,18 @@ export function getWeatherGlyph(statusText) {
   return matchRule(statusText).glyph
 }
 
-/** @param {string} statusText @returns {{bg: string, accent: string}} 카드 배경색 / 포인트색 CSS 변수 */
+/**
+ * 날씨에 딸린 색 한 벌.
+ * - accent: 아이콘 원을 꽉 채우는 진한 잉크색
+ * - onAccent: 그 원 위에 얹는 색. 노란 해 위에는 잉크색이, 진한 파랑 위에는 종이색이
+ *   읽힌다. 원의 밝기에 따라 갈리는 값이라 색과 같은 표에서 함께 관리해야 어긋나지 않는다.
+ * - bg: 옅은 틴트. 큰 면에는 쓰지 않고 배너·표시처럼 작은 자리에만 쓴다.
+ * @param {string} statusText
+ * @returns {{bg: string, accent: string, onAccent: string}}
+ */
 export function getWeatherTheme(statusText) {
-  const rule = matchRule(statusText)
-  return { bg: rule.bg, accent: rule.accent }
+  const { bg, accent, onAccent } = matchRule(statusText)
+  return { bg, accent, onAccent }
 }
 
 /**

@@ -31,15 +31,22 @@ body {
   --color-primary-dark: oklch(52% 0.19 35);
   --color-primary-bg: oklch(93% 0.05 35);
 
-  --color-sun: oklch(74% 0.16 85);
+  /*
+   * 날씨색은 "옅게 물들이는 색"이 아니라 "종이에 얹는 잉크"다. 카드 배경을 연하게
+   * 칠하는 대신 아이콘 원을 이 색으로 꽉 채우기 때문에, 파스텔이 아니라 인쇄 잉크처럼
+   * 진해야 한다. 색마다 밝기가 다른 건 의도한 것이다 — 노란 해는 원래 밝고 먹구름은
+   * 원래 어둡다. 대신 그 위에 얹는 글자색이 달라져야 해서, 어떤 색을 얹을지는
+   * weatherIcon.js의 onAccent가 색과 같은 표에서 함께 정한다.
+   */
+  --color-sun: oklch(80% 0.19 85);
   --color-sun-bg: oklch(95% 0.05 85);
-  --color-rain: oklch(64% 0.17 255);
+  --color-rain: oklch(55% 0.2 250);
   --color-rain-bg: oklch(93% 0.04 255);
-  --color-cloud: oklch(62% 0.02 250);
+  --color-cloud: oklch(60% 0.035 250);
   --color-cloud-bg: oklch(93% 0.01 250);
-  --color-snow: oklch(70% 0.13 205);
+  --color-snow: oklch(74% 0.14 200);
   --color-snow-bg: oklch(94% 0.04 205);
-  --color-storm: oklch(58% 0.17 305);
+  --color-storm: oklch(50% 0.21 300);
   --color-storm-bg: oklch(92% 0.05 305);
 
   /*

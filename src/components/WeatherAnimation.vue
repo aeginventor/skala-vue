@@ -107,24 +107,29 @@ const snowflakes = Array.from({ length: 8 }, (_, i) => ({
   justify-content: center;
 }
 
+/*
+ * 장면 배경도 카드 아이콘 원과 같은 규칙을 따른다 — 옅게 물들이는 대신 날씨색을 진하게
+ * 깐다. 흰 구름과 빗줄기가 그 위에서 훨씬 또렷하게 읽힌다. 위아래로 살짝 밝기 차만 줘서
+ * 완전히 납작한 색 면은 피했다(하늘이 위쪽이 밝다는 감각).
+ */
 .scene--sun {
-  background: linear-gradient(180deg, oklch(88% 0.08 85) 0%, var(--color-sun-bg) 100%);
+  background: linear-gradient(180deg, oklch(86% 0.17 90) 0%, var(--color-sun) 100%);
 }
 
 .scene--cloud {
-  background: linear-gradient(180deg, oklch(88% 0.02 250) 0%, var(--color-cloud-bg) 100%);
+  background: linear-gradient(180deg, oklch(70% 0.03 250) 0%, var(--color-cloud) 100%);
 }
 
 .scene--rain {
-  background: linear-gradient(180deg, oklch(82% 0.07 255) 0%, var(--color-rain-bg) 100%);
+  background: linear-gradient(180deg, oklch(64% 0.17 250) 0%, var(--color-rain) 100%);
 }
 
 .scene--snow {
-  background: linear-gradient(180deg, oklch(92% 0.03 205) 0%, var(--color-snow-bg) 100%);
+  background: linear-gradient(180deg, oklch(84% 0.1 200) 0%, var(--color-snow) 100%);
 }
 
 .scene--storm {
-  background: linear-gradient(180deg, oklch(82% 0.06 305) 0%, var(--color-storm-bg) 100%);
+  background: linear-gradient(180deg, oklch(60% 0.18 300) 0%, var(--color-storm) 100%);
 }
 
 /* ---------- 맑음 ---------- */

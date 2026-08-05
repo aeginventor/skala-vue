@@ -67,7 +67,7 @@ const tempLevel = computed(() => getTempLevel(city.temp))
   <li
     class="tile ink-pressable"
     :class="{ 'tile--active': isSelected, 'tile--favorite': isFavorite }"
-    :style="{ '--tile-bg': theme.bg, '--tile-accent': theme.accent }"
+    :style="{ '--tile-accent': theme.accent, '--tile-on-accent': theme.onAccent }"
     @click="handleCardClick"
   >
     <button
@@ -107,10 +107,16 @@ const tempLevel = computed(() => getTempLevel(city.temp))
 </template>
 
 <style scoped>
+/*
+ * 카드는 날씨와 무관하게 전부 같은 종이색이다. 예전에는 카드 전체를 날씨색으로 옅게
+ * 물들였는데, 큰 면을 연하게 칠하는 건 파스텔이라 두꺼운 잉크 테두리와 안 어울렸다.
+ * 색은 아래 아이콘 원 한 곳에만 진하게 넣는다 — 면적은 줄고 채도는 올라가서
+ * 오히려 무슨 날씨인지가 더 빨리 읽힌다.
+ */
 .tile {
   position: relative;
   list-style: none;
-  background: var(--tile-bg, var(--color-sun-bg));
+  background: var(--color-surface);
   border: var(--border-thick);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-hard);
@@ -184,11 +190,12 @@ const tempLevel = computed(() => getTempLevel(city.temp))
   background: var(--color-sun-bg);
 }
 
+/* 카드에서 유일하게 색이 들어오는 자리. 날씨색을 옅게가 아니라 꽉 채운다. */
 .tile__icon-wrap {
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--tile-accent, var(--color-sun));
   border: var(--border-thin);
   display: flex;
   align-items: center;
@@ -198,7 +205,7 @@ const tempLevel = computed(() => getTempLevel(city.temp))
 
 .tile__icon {
   font-size: 30px;
-  color: var(--tile-accent, var(--color-sun));
+  color: var(--tile-on-accent, var(--color-ink));
 }
 
 .tile__name {

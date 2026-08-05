@@ -49,7 +49,7 @@ function handleDetailClick() {
       <template v-if="city">
         <div
           class="selected-bar__icon-wrap"
-          :style="{ '--panel-bg': theme.bg, '--panel-accent': theme.accent }"
+          :style="{ '--panel-accent': theme.accent, '--panel-on-accent': theme.onAccent }"
         >
           <WeatherGlyph :status="city.status" class="selected-bar__icon" />
         </div>
@@ -116,7 +116,8 @@ function handleDetailClick() {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: var(--panel-bg, var(--color-sun-bg));
+  /* 카드와 같은 규칙: 원을 날씨색으로 꽉 채우고 그 위 아이콘 색만 밝기에 맞춰 바꾼다 */
+  background: var(--panel-accent, var(--color-sun));
   border: var(--border-thin);
   display: flex;
   align-items: center;
@@ -125,7 +126,7 @@ function handleDetailClick() {
 
 .selected-bar__icon {
   font-size: 20px;
-  color: var(--panel-accent, var(--color-sun));
+  color: var(--panel-on-accent, var(--color-ink));
 }
 
 .selected-bar__info {
