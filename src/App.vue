@@ -1,9 +1,23 @@
 <script setup>
+import { watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import UnitToggler from './components/UnitToggler.vue'
+import DataSourceToggler from './components/DataSourceToggler.vue'
 import CityDock from './components/CityDock.vue'
+import { useConfigStore } from './stores/configStore.js'
+import { useWeatherStore } from './stores/weatherStore.js'
 
 const route = useRoute()
+const configStore = useConfigStore()
+const weatherStore = useWeatherStore()
+
+/**
+ * 날씨 데이터 로딩을 앱 껍데기에서 맡는다. Dock이 여기(App) 하위에 있어서 특정 화면에
+ * 종속되지 않고, 예시↔실시간 토글도 헤더에 있어 어느 화면에서든 눌릴 수 있기 때문이다.
+ * 로딩이 Home 화면에만 있으면 상세 페이지에서 토글했을 때 Dock과 목록이 옛 값을 들고 있게 된다.
+ */
+onMounted(() => weatherStore.loadCities(configStore.useMockData))
+watch(() => configStore.useMockData, (useMock) => weatherStore.loadCities(useMock))
 </script>
 
 <template>
@@ -22,6 +36,7 @@ const route = useRoute()
           </RouterLink>
         </h1>
         <div class="page-header__actions">
+          <DataSourceToggler />
           <UnitToggler />
         </div>
       </div>
@@ -53,10 +68,13 @@ const route = useRoute()
   margin: 0 auto 32px;
 }
 
+/* 스위치가 둘로 늘면서 좁은 폭에서 한 줄에 다 안 들어간다. 넘치는 대신 줄을 바꾸게 둔다. */
 .page-header__top {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
   margin-bottom: 18px;
 }
 

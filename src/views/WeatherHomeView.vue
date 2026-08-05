@@ -1,12 +1,11 @@
 <script setup>
-import { ref, computed, watch, watchEffect, onMounted } from 'vue'
+import { ref, computed, watch, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseDashboardCard from '../components/BaseDashboardCard.vue'
 import SearchBar from '../components/SearchBar.vue'
 import WeatherCard from '../components/WeatherCard.vue'
 import SelectedCityPanel from '../components/SelectedCityPanel.vue'
 import { getSubjectParticle } from '../utils/josa.js'
-import { fetchCurrentWeather, mapWeatherResponse } from '../api/weatherApi.js'
 import { useConfigStore } from '../stores/configStore.js'
 import { useWeatherStore } from '../stores/weatherStore.js'
 import { getWeatherCategory, WEATHER_CATEGORY_ORDER } from '../utils/weatherIcon.js'
@@ -23,9 +22,6 @@ const weatherStore = useWeatherStore()
 
 const searchQuery = ref('')
 const selectedCityInfo = ref(null)
-
-const isLoading = ref(true)
-const fetchError = ref(null)
 
 /**
  * 즐겨찾기 도시 id 목록.
@@ -178,29 +174,10 @@ watch(
   { deep: true }
 )
 
-/**
- * Axios로 OpenWeatherMap 실제 데이터를 불러오고, 로딩·에러 상태를 함께 관리한다.
- * 지역이 30개라 Promise.all이 동시에 30번 호출된다. OpenWeatherMap 무료 플랜은
- * 분당 60회까지 허용되므로 페이지 새로고침 한 번 정도는 문제없지만, 짧은 시간에
- * 새로고침을 반복하면 429(Too Many Requests)가 날 수 있다. 재시도/캐싱까지는
- * 넣지 않았고, 실패 시 Mock 데이터로 안전하게 대체한다.
- */
-onMounted(async () => {
-  try {
-    const liveWeatherList = await Promise.all(
-      weatherStore.cities.map(async (city) => {
-        const apiData = await fetchCurrentWeather(city.lat, city.lon)
-        return mapWeatherResponse(apiData, city)
-      })
-    )
-    weatherStore.setCities(liveWeatherList)
-  } catch (error) {
-    fetchError.value = '실시간 날씨 데이터를 불러오지 못해 임시 데이터로 표시합니다.'
-    console.error('[Axios 에러] OpenWeatherMap 호출 실패:', error)
-  } finally {
-    isLoading.value = false
-  }
-})
+// 불러오기는 App.vue가 스토어를 통해 맡는다(Dock도 같은 데이터를 쓰고, 토글이 헤더에 있어서다).
+// 이 화면은 그 결과만 받아 쓴다.
+const isLoading = computed(() => weatherStore.isLoading)
+const fetchError = computed(() => weatherStore.loadError)
 
 function handleUpdateQuery(newQuery) {
   searchQuery.value = newQuery
@@ -241,6 +218,18 @@ function toggleFavorite(city) {
 
     <p v-if="fetchError" class="fetch-error">
       <i class="fa-solid fa-triangle-exclamation"></i> {{ fetchError }}
+    </p>
+
+    <!--
+      예시 모드는 켜둔 걸 잊기 쉽다. 안내가 없으면 "날씨가 안 맞는다"고 오해하게 되므로
+      켜져 있는 동안에는 계속 눈에 띄게 알려주고, 여기서 바로 끌 수 있게 한다.
+    -->
+    <p v-if="configStore.useMockData" class="mock-notice">
+      <i class="fa-solid fa-flask"></i>
+      예시 데이터를 보고 있어요. 실제 날씨가 아니라, 구현된 날씨 표현을 모두 담은 예시입니다.
+      <button type="button" class="mock-notice__btn" @click="configStore.toggleMockData">
+        실시간으로 돌아가기
+      </button>
     </p>
 
     <BaseDashboardCard title="지역별 날씨 현황" icon="fa-solid fa-location-dot">
@@ -470,6 +459,33 @@ function toggleFavorite(city) {
   border: var(--border-thin);
   border-radius: var(--radius-sm);
   padding: 10px 14px;
+}
+
+.mock-notice {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+  border: var(--border-thin);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mock-notice__btn {
+  margin-left: auto;
+  border: var(--border-thin);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: inherit;
 }
 
 </style>

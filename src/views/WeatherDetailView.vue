@@ -9,6 +9,7 @@ import {
 } from '../api/weatherApi.js'
 import { useConfigStore } from '../stores/configStore.js'
 import { useWeatherStore } from '../stores/weatherStore.js'
+import { buildMockForecast } from '../data/weatherMockData.js'
 import WeatherGlyph from '../components/WeatherGlyph.vue'
 import { formatLocalTime } from '../utils/formatTime.js'
 import WeatherAnimation from '../components/WeatherAnimation.vue'
@@ -48,6 +49,13 @@ async function loadCityDetail(cityId) {
 
   cityDetail.value = baseCity // 우선 (이전에 캐시된 값이 있다면 그 값으로) 화면을 채워 빈 화면 방지
 
+  // 예시 모드면 API를 부르지 않는다. 스토어에 이미 예시 값이 들어와 있으므로 예보만 지어낸다.
+  if (configStore.useMockData) {
+    forecastList.value = buildMockForecast(baseCity)
+    isLoading.value = false
+    return
+  }
+
   const { lat, lon } = baseCity
 
   try {
@@ -68,6 +76,15 @@ async function loadCityDetail(cityId) {
 }
 
 watch(() => route.params.cityId, loadCityDetail, { immediate: true })
+
+/**
+ * 예시↔실시간 토글은 헤더에 있어 이 화면에서도 눌린다. 스토어 쪽 목록은 App이 다시
+ * 채우지만, 이 화면이 들고 있는 상세·예보는 그대로 남으므로 여기서도 다시 불러온다.
+ */
+watch(
+  () => configStore.useMockData,
+  () => loadCityDetail(route.params.cityId)
+)
 
 const displayTemp = computed(() => {
   const rawTemp = cityDetail.value?.temp
