@@ -202,19 +202,25 @@ onBeforeUnmount(() => {
 }
 
 /*
- * .dock-pinned 바로 뒤(오른쪽)에 옅어지는 그라데이션을 깔아서, 스크롤되는 도시
+ * .dock-pinned 바로 뒤(오른쪽)에 옅어지는 페이드를 깔아서, 스크롤되는 도시
  * 버튼들이 각지게 뚝 끊기는 대신 배경 속으로 스며들듯 지나가게 한다.
  * .dock-pinned 자신은 sticky라 스크롤해도 화면에 그대로 붙어있으므로, 이
  * 가상 요소도 같이 고정된 채로 남아 계속 같은 자리에서 페이드 역할을 한다.
+ * - [다듬기] 처음엔 22px 폭의 완전히 각진 사각형 그라데이션이라, 스크롤을
+ *   시작하기도 전부터(정지 상태에서도) 서울 버튼 왼쪽이 큼직하게 가려 보였다.
+ *   폭을 14px로 줄이고, 위아래로 살짝(-6px) 더 크게 잡은 뒤 blur를 줘서 사각형
+ *   윤곽 자체가 안 보이게 했다 — 가로 경계뿐 아니라 위/아래 경계도 부드럽게
+ *   풀어지고, 정지 상태에서 가려지는 영역도 훨씬 얇아졌다.
  */
 .dock-pinned::after {
   content: '';
   position: absolute;
-  top: 0;
-  right: -22px;
-  width: 22px;
-  height: 100%;
+  top: -6px;
+  bottom: -6px;
+  right: -14px;
+  width: 14px;
   background: linear-gradient(to right, var(--color-surface), transparent);
+  filter: blur(2px);
   pointer-events: none;
 }
 
