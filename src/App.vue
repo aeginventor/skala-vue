@@ -1,6 +1,9 @@
 <script setup>
+import { useRoute } from 'vue-router'
 import UnitToggler from './components/UnitToggler.vue'
 import CityDock from './components/CityDock.vue'
+
+const route = useRoute()
 </script>
 
 <template>
@@ -11,7 +14,21 @@ import CityDock from './components/CityDock.vue'
           <span class="brand-badge"><i class="fa-solid fa-cloud-sun"></i></span>
           날씨 Dock
         </h1>
-        <UnitToggler />
+        <div class="page-header__actions">
+          <!--
+            [피드백 반영] Dock 맨 끝까지 스크롤해야 나오던 "소개" 링크를, 화씨/섭씨
+            버튼 바로 왼쪽에 항상 보이는 버튼으로 하나 더 뒀다. 누르기 편하게
+            텍스트까지 같이 넣어서 UnitToggler 버튼보다 살짝 더 크게 잡았다.
+          -->
+          <RouterLink
+            to="/about"
+            class="about-btn ink-pressable"
+            :class="{ 'about-btn--active': route.name === 'weather-about' }"
+          >
+            <i class="fa-solid fa-circle-info"></i> 소개
+          </RouterLink>
+          <UnitToggler />
+        </div>
       </div>
       <CityDock />
     </header>
@@ -51,6 +68,34 @@ import CityDock from './components/CityDock.vue'
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.page-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.about-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 16px;
+  border: var(--border-thick);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-hard-sm);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.about-btn--active {
+  background: var(--color-primary);
+  color: #fff;
 }
 
 .brand-badge {
