@@ -7,9 +7,13 @@ body {
 }
 
 /**
- * 디자인 토큰 v2 — "카툰/스티커" 스타일로 전면 개편.
- * - 이전 버전(테라코타+슬레이트, 부드러운 그림자)은 무난하긴 한데 너무 뻔해서,
- *   아예 다른 방향(두꺼운 잉크 테두리 + 딱 떨어지는 하드 섀도우 + 쨍한 원색)으로 갈아엎었다.
+ * 디자인 토큰 v3 — "카툰/스티커" 톤은 유지하되, 색상을 OKLCH 램프로 재정의.
+ * - 이전 버전은 색을 하나씩 hex로 골라 넣어서, hot=primary·favorite=sun·
+ *   warning-bg=sun-bg가 우연히 같은 값을 따로 타이핑한 것처럼 보였다. 지금은
+ *   명도(L)·채도(C)를 그룹별로 고정하고 색상(H)만 바꿔서 뽑고, 겹치는 의미의
+ *   토큰은 새 hex 대신 다른 토큰을 그대로 참조(alias)한다.
+ * - ink/primary도 요즘 생성형 UI에서 흔한 인디고 네이비(#22223B)·코랄(#FF6B4A)
+ *   대신 더 따뜻한 hue(잉크는 브라운블랙, 프라이머리는 테라코타)로 옮겼다.
  * - 하드 섀도우(--shadow-hard)는 blur 없이 순수 offset만 주는 방식이라, 스티커를
  *   화면에 붙여놓은 듯한 느낌을 준다. 카드/버튼을 누르면(:active) 이 그림자를
  *   0으로 줄이고 살짝 이동시켜서 "눌리는" 촉감을 흉내냈다.
@@ -19,36 +23,36 @@ body {
 :root {
   --color-bg: #fff6e9;
   --color-surface: #ffffff;
-  --color-ink: #22223b;
-  --color-muted: #6b7085;
+  --color-ink: oklch(24% 0.035 55);
+  --color-muted: oklch(52% 0.02 55);
   --color-border: var(--color-ink);
 
-  --color-primary: #ff6b4a;
-  --color-primary-dark: #e14f30;
-  --color-primary-bg: #ffe3d9;
+  --color-primary: oklch(64% 0.19 35);
+  --color-primary-dark: oklch(52% 0.19 35);
+  --color-primary-bg: oklch(93% 0.05 35);
 
-  --color-sun: #ffb100;
-  --color-sun-bg: #fff0c2;
-  --color-rain: #3d8bfd;
-  --color-rain-bg: #dbe9ff;
-  --color-cloud: #7c8798;
-  --color-cloud-bg: #e7ebf1;
-  --color-snow: #29c2e0;
-  --color-snow-bg: #d8f6fb;
-  --color-storm: #7c5cf0;
-  --color-storm-bg: #e9e2ff;
+  --color-sun: oklch(74% 0.16 85);
+  --color-sun-bg: oklch(95% 0.05 85);
+  --color-rain: oklch(64% 0.17 255);
+  --color-rain-bg: oklch(93% 0.04 255);
+  --color-cloud: oklch(62% 0.02 250);
+  --color-cloud-bg: oklch(93% 0.01 250);
+  --color-snow: oklch(70% 0.13 205);
+  --color-snow-bg: oklch(94% 0.04 205);
+  --color-storm: oklch(58% 0.17 305);
+  --color-storm-bg: oklch(92% 0.05 305);
 
-  --color-hot: #ff6b4a;
-  --color-hot-bg: #ffe3d9;
-  --color-cool: #2fb6a6;
-  --color-cool-bg: #ddf6f2;
+  --color-hot: var(--color-primary);
+  --color-hot-bg: var(--color-primary-bg);
+  --color-cool: var(--color-snow);
+  --color-cool-bg: var(--color-snow-bg);
 
-  --color-success: #2fb67a;
-  --color-success-bg: #dff7ec;
-  --color-warning: #b9790a;
-  --color-warning-bg: #fff0c2;
+  --color-success: oklch(62% 0.15 145);
+  --color-success-bg: oklch(94% 0.05 145);
+  --color-warning: oklch(55% 0.13 75);
+  --color-warning-bg: var(--color-sun-bg);
 
-  --color-favorite: #ffb100;
+  --color-favorite: var(--color-sun);
 
   --radius-lg: 24px;
   --radius-md: 16px;

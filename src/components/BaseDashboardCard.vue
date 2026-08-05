@@ -35,9 +35,10 @@ defineProps({
 }
 
 .card h2 {
-  font-family: 'Fredoka', 'Pretendard', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   font-size: 17px;
-  font-weight: 600;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   margin: 0 0 14px;
   display: flex;
   align-items: center;

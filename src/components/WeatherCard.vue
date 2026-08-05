@@ -148,7 +148,7 @@ function isHot(rawCelsiusTemp) {
 
 .tile__favorite--active {
   color: var(--color-favorite);
-  background: #fff9e6;
+  background: var(--color-sun-bg);
 }
 
 .tile__icon-wrap {
@@ -170,9 +170,10 @@ function isHot(rawCelsiusTemp) {
 
 .tile__name {
   margin: 0;
-  font-family: 'Fredoka', 'Pretendard', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   font-size: 19px;
-  font-weight: 600;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .tile__region {
@@ -183,9 +184,10 @@ function isHot(rawCelsiusTemp) {
 
 .tile__temp {
   margin: 0 0 8px;
-  font-family: 'Fredoka', 'Pretendard', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   font-size: 34px;
-  font-weight: 600;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   line-height: 1;
 }
 

@@ -33,9 +33,10 @@
 }
 
 h2 {
-  font-family: 'Fredoka', 'Pretendard', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   font-size: 19px;
-  font-weight: 600;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   margin: 0 0 8px;
   color: var(--color-ink);
 }

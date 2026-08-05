@@ -211,9 +211,10 @@ const visibilityKm = computed(() => {
 }
 
 .detail-card h2 {
-  font-family: 'Fredoka', 'Pretendard', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   margin: 0 0 16px;
   display: flex;
   align-items: center;
@@ -298,9 +299,10 @@ const visibilityKm = computed(() => {
 
 .hero__temp {
   margin: 0;
-  font-family: 'Fredoka', 'Pretendard', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   font-size: 36px;
-  font-weight: 600;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   color: var(--color-ink);
 }
 

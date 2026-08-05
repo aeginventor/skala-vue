@@ -106,23 +106,23 @@ const snowflakes = Array.from({ length: 8 }, (_, i) => ({
 }
 
 .scene--sun {
-  background: linear-gradient(180deg, #ffe6a3 0%, var(--color-sun-bg) 100%);
+  background: linear-gradient(180deg, oklch(88% 0.08 85) 0%, var(--color-sun-bg) 100%);
 }
 
 .scene--cloud {
-  background: linear-gradient(180deg, #dfe7f0 0%, var(--color-cloud-bg) 100%);
+  background: linear-gradient(180deg, oklch(88% 0.02 250) 0%, var(--color-cloud-bg) 100%);
 }
 
 .scene--rain {
-  background: linear-gradient(180deg, #bcd6ff 0%, var(--color-rain-bg) 100%);
+  background: linear-gradient(180deg, oklch(82% 0.07 255) 0%, var(--color-rain-bg) 100%);
 }
 
 .scene--snow {
-  background: linear-gradient(180deg, #e6fbff 0%, var(--color-snow-bg) 100%);
+  background: linear-gradient(180deg, oklch(92% 0.03 205) 0%, var(--color-snow-bg) 100%);
 }
 
 .scene--storm {
-  background: linear-gradient(180deg, #cfc4f7 0%, var(--color-storm-bg) 100%);
+  background: linear-gradient(180deg, oklch(82% 0.06 305) 0%, var(--color-storm-bg) 100%);
 }
 
 /* ---------- 맑음 ---------- */
@@ -239,7 +239,7 @@ const snowflakes = Array.from({ length: 8 }, (_, i) => ({
 }
 
 .raindrop--storm {
-  background: #4b3fb0;
+  background: oklch(38% 0.15 305);
   height: 15px;
 }
 
@@ -289,7 +289,7 @@ const snowflakes = Array.from({ length: 8 }, (_, i) => ({
   left: 50%;
   transform: translateX(-50%);
   font-size: 22px;
-  color: #ffd93c;
+  color: oklch(84% 0.16 95);
   -webkit-text-stroke: 1px var(--color-ink);
   animation: flash 2.6s ease-in-out infinite;
 }

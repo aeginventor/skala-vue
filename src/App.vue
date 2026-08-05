@@ -37,7 +37,12 @@ const route = useRoute()
 <style scoped>
 .page {
   min-height: 100vh;
-  background: var(--color-bg);
+  /* 크림 배경이 완전히 평평한 벡터색으로 보이지 않도록, 아주 옅은 종이 질감
+     노이즈를 겹쳐 얹는다. feTurbulence를 낮은 opacity로 타일링한 SVG라 무게가
+     거의 없다. */
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E"),
+    var(--color-bg);
   padding: 32px 16px 60px;
   font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
   color: var(--color-ink);
@@ -56,9 +61,10 @@ const route = useRoute()
 }
 
 .page-header h1 {
-  font-family: 'Fredoka', 'Pretendard', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   font-size: 26px;
-  font-weight: 600;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   margin: 0;
   display: flex;
   align-items: center;

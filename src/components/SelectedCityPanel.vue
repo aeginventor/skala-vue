@@ -133,9 +133,10 @@ function handleDetailClick() {
 
 .selected-bar__name {
   margin: 0;
-  font-family: 'Fredoka', 'Pretendard', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   color: var(--color-ink);
   white-space: nowrap;
   overflow: hidden;

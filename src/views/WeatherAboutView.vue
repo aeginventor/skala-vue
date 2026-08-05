@@ -85,9 +85,10 @@ p:last-child {
 }
 
 .lead {
-  font-family: 'Fredoka', 'Pretendard', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   font-size: 17px;
-  font-weight: 600;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   margin-bottom: 10px;
 }
 
@@ -118,9 +119,9 @@ p:last-child {
   background: var(--color-primary);
   color: #fff;
   border: var(--border-thin);
-  font-family: 'Fredoka', 'Pretendard', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 800;
 }
 
 .steps__text {
