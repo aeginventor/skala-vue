@@ -101,9 +101,8 @@ onBeforeUnmount(() => {
           <i class="fa-solid fa-house"></i>
           <span class="dock-item__label">전체</span>
         </RouterLink>
+        <span class="dock-divider" aria-hidden="true"></span>
       </div>
-
-      <span class="dock-divider" aria-hidden="true"></span>
 
       <RouterLink
         v-for="city in weatherStore.cities"
@@ -166,12 +165,23 @@ onBeforeUnmount(() => {
  * padding-right + 음수 margin-right 조합으로 이 래퍼의 배경이 flex gap 틈까지
  * 덮게 만들어서, 뒤로 스크롤되는 다른 도시 아이콘이 gap 사이로 비치거나
  * "전체" 버튼과 겹쳐 보이는 일이 없게 했다.
+ *
+ * [버그 수정] 처음엔 구분선(.dock-divider)을 이 래퍼 밖의 일반 형제 요소로 뒀는데,
+ * 그 구분선은 sticky가 아니라서 스크롤을 시작하는 순간 다른 도시 아이콘들과 같이
+ * 딸려가 버렸다. 그러면 "전체"와 지역 목록 사이의 경계가 스크롤 위치 0에서만
+ * 잠깐 보이고 바로 사라졌다(드래그로 스크롤할 때도 마찬가지). 구분선을 이 sticky
+ * 래퍼 "안"으로 옮겨서 전체 버튼과 한 몸으로 고정시켰다 — 이제 스크롤을 얼마나
+ * 하든 항상 같은 자리에 남아있다. 자식(버튼+구분선)을 가로로 나란히 두기 위해
+ * 래퍼 자체에도 flex를 줬다.
  */
 .dock-pinned {
   position: sticky;
   left: 0;
   z-index: 5;
   flex-shrink: 0;
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
   background: var(--color-surface);
   padding: 0 8px 0 16px;
   margin-right: -8px;
