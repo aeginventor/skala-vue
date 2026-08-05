@@ -12,12 +12,10 @@ import { useWeatherStore } from '../stores/weatherStore.js'
 import { getWeatherCategory, WEATHER_CATEGORY_ORDER } from '../utils/weatherIcon.js'
 
 /**
- * WeatherHomeView
- * - 로직(반응형 상태 / computed / watch / watchEffect / Axios)은 이전 미션과 이어지고,
- *   여기서부터는 과제 요구사항 밖에서 "내가 직접 판단해서" 추가한 기능들이다.
- *   (즐겨찾기, 정렬, 통계 computed, localStorage 저장)
- * - 도시 목록 자체는 이제 weatherStore(Pinia)가 소유한다. Dock/Detail이 같은 데이터를
- *   보게 하기 위해서다 (자세한 이유는 stores/weatherStore.js 주석 참고).
+ * WeatherHomeView — 검색/정렬/즐겨찾기와 지역별 날씨 카드 목록을 보여주는 대시보드.
+ * 즐겨찾기·정렬·통계 computed·localStorage 저장 로직이 이 뷰의 핵심이다.
+ * 도시 목록 자체는 weatherStore(Pinia)가 소유한다. Dock/Detail이 같은 데이터를
+ * 보게 하기 위해서다 (자세한 이유는 stores/weatherStore.js 주석 참고).
  */
 const router = useRouter()
 const configStore = useConfigStore()
@@ -30,10 +28,10 @@ const isLoading = ref(true)
 const fetchError = ref(null)
 
 /**
- * [내가 추가한 반응형 변수 1] 즐겨찾기 도시 id 목록
- * - id 배열로만 관리하는 이유: 도시 객체 전체를 통째로 저장하면 온도 같은 값이 갱신될 때
- *   즐겨찾기 목록에 있는 "옛날 온도"와 실제 카드의 "최신 온도"가 따로 놀 위험이 있다.
- *   id만 들고 있으면 항상 weatherList 의 최신 데이터를 참조하게 되어 그런 불일치가 없다.
+ * 즐겨찾기 도시 id 목록.
+ * id 배열로만 관리하는 이유: 도시 객체 전체를 통째로 저장하면 온도 같은 값이 갱신될 때
+ * 즐겨찾기 목록에 있는 "옛날 온도"와 실제 카드의 "최신 온도"가 따로 놀 위험이 있다.
+ * id만 들고 있으면 항상 weatherList 의 최신 데이터를 참조하게 되어 그런 불일치가 없다.
  */
 const FAVORITES_STORAGE_KEY = 'skala-weather-favorites'
 
@@ -49,7 +47,7 @@ function loadFavoritesFromStorage() {
 
 const favoriteCityIds = ref(loadFavoritesFromStorage())
 
-/** [내가 추가한 반응형 변수 2] 정렬 기준 (이름순 / 기온순 / 날씨별) */
+/** 정렬 기준 (이름순 / 기온순 / 날씨별) */
 const sortOrder = ref('name')
 
 const filteredWeatherList = computed(() => {
@@ -59,17 +57,16 @@ const filteredWeatherList = computed(() => {
 })
 
 /**
- * [내가 추가한 computed 1] 검색 필터링 결과를 정렬 기준에 맞게 다시 정렬.
+ * 검색 필터링 결과를 정렬 기준에 맞게 다시 정렬한다.
  * - filteredWeatherList 를 그대로 바꾸지 않고 얕은 복사([...list])한 뒤 정렬한다.
  *   Array.prototype.sort() 는 원본 배열을 직접 변경(mutate)하는 함수라서,
  *   복사 없이 그냥 정렬하면 filteredWeatherList(원본 참조)까지 같이 뒤바뀌어 버린다.
- * - [피드백 반영] 즐겨찾기가 정렬에 전혀 반영되지 않아서, 즐겨찾기 도시를 항상 맨 앞으로
- *   오게 만들었다. 정렬 기준(이름/기온/날씨)은 "즐겨찾기 그룹"과 "나머지 그룹" 각각의
- *   내부 순서에만 적용된다.
- * - [버그 수정] '날씨별' 정렬을 status 문자열 그대로 비교하던 걸 getWeatherCategory()로
- *   뽑은 대분류(맑음/구름/비/눈/뇌우) 기준으로 바꿨다. "튼구름"과 "약간 흐림"처럼
- *   문자열은 달라도 같은 구름 계열이면 이제 확실히 묶인다. 같은 카테고리 안에서는
- *   이름순으로 2차 정렬해서 순서가 매번 들쭉날쭉하지 않게 했다.
+ * - 즐겨찾기 도시는 정렬 기준과 무관하게 항상 맨 앞에 온다. 이름/기온/날씨 정렬
+ *   기준은 "즐겨찾기 그룹"과 "나머지 그룹" 각각의 내부 순서에만 적용된다.
+ * - '날씨별' 정렬은 status 문자열을 그대로 비교하지 않고 getWeatherCategory()로
+ *   뽑은 대분류(맑음/구름/비/눈/뇌우) 기준으로 묶는다. "튼구름"과 "약간 흐림"처럼
+ *   문자열은 달라도 같은 구름 계열이면 한데 묶이고, 같은 카테고리 안에서는
+ *   이름순으로 2차 정렬해서 순서가 매번 들쭉날쭉하지 않게 한다.
  */
 function compareBySortOrder(a, b) {
   if (sortOrder.value === 'temp') return b.temp - a.temp // 높은 기온 순
@@ -97,13 +94,13 @@ const sortedWeatherList = computed(() => {
   return [...favorites, ...others]
 })
 
-/** [내가 추가한 computed 2] 즐겨찾기 개수 */
+/** 즐겨찾기 개수 */
 const favoriteCount = computed(() => favoriteCityIds.value.length)
 
-/** [내가 추가한 computed] 검색어로 필터링된 결과 개수. 전체 개수 대비 몇 개가 걸렸는지 바로 보여준다. */
+/** 검색어로 필터링된 결과 개수. 전체 개수 대비 몇 개가 걸렸는지 바로 보여준다. */
 const filteredCount = computed(() => filteredWeatherList.value.length)
 
-/** [내가 추가한 computed 3] 평균 기온 (섭씨 원본 기준으로 계산 후, 화면 표시 단위에 맞춰 변환) */
+/** 평균 기온 (섭씨 원본 기준으로 계산 후, 화면 표시 단위에 맞춰 변환) */
 const averageTempCelsius = computed(() => {
   if (weatherStore.cities.length === 0) return 0
   const total = weatherStore.cities.reduce((sum, city) => sum + city.temp, 0)
@@ -117,8 +114,7 @@ const averageDisplayTemp = computed(() => {
 })
 
 /**
- * [내가 추가한 computed 4/5] 최고·최저 기온 도시.
- * reduce로 배열을 한 번만 훑어서 찾는다.
+ * 최고·최저 기온 도시. reduce로 배열을 한 번만 훑어서 찾는다.
  */
 const hottestCity = computed(() => {
   if (weatherStore.cities.length === 0) return null
@@ -139,10 +135,9 @@ const tagline = computed(() => {
 })
 
 /**
- * [피드백 반영] 예전엔 이 문구를 화면 하단 상태바에 그대로 띄웠는데, 지금은 선택한
- * 도시를 사이드 패널(SelectedCityPanel)이 아이콘·기온까지 보여주는 걸로 대체했다.
- * 이 computed와 아래 watch는 "선택이 바뀔 때마다 반응"하는 로직 자체는 여전히
- * 유효해서 콘솔 로그용으로 남겨뒀다.
+ * 이 문구는 더 이상 화면에 그대로 노출되지 않는다 — 선택한 도시는 이제
+ * SelectedCityPanel이 아이콘·기온까지 함께 보여준다. 다만 "선택이 바뀔 때마다
+ * 반응"하는 로직 자체는 여전히 유효해서, 아래 watch의 콘솔 로그용으로 남겨뒀다.
  */
 const statusMessage = computed(() => {
   if (!selectedCityInfo.value) return '카드를 클릭하거나 검색해 보세요.'
@@ -158,14 +153,14 @@ watchEffect(() => {
   console.log(`[watchEffect 자동 호출] 현재 검색어 '${searchQuery.value}'에 매칭되는 도시를 필터링합니다.`)
 })
 
-/** [내가 추가한 watch 1] 정렬 기준이 바뀔 때 콘솔 로그 */
+/** 정렬 기준이 바뀔 때 콘솔 로그 */
 watch(sortOrder, (newOrder) => {
   const labelMap = { temp: '기온순', weather: '날씨별', name: '이름순' }
   console.log(`[watch 감지] 정렬 기준이 '${labelMap[newOrder]}'으로 바뀌었습니다.`)
 })
 
 /**
- * [내가 추가한 watch 2] 즐겨찾기 목록이 바뀔 때마다 localStorage에 저장.
+ * 즐겨찾기 목록이 바뀔 때마다 localStorage에 저장한다.
  * watchEffect 대신 watch를 고른 이유: "즐겨찾기 배열 자체"만 감시 대상으로 못 박고 싶어서다.
  */
 watch(
@@ -178,11 +173,11 @@ watch(
 )
 
 /**
- * [3일차 요구사항] Axios 로 OpenWeatherMap 실제 데이터 교체 + 로딩·에러 처리
- * - 지역이 30개로 늘면서 Promise.all이 동시에 30번 호출한다. OpenWeatherMap 무료 플랜은
- *   분당 60회까지 허용되므로 페이지 새로고침 한 번 정도는 문제없지만, 짧은 시간에
- *   새로고침을 반복하면 429(Too Many Requests)가 날 수 있다는 점은 인지하고 있다.
- *   (지금 범위에서는 재시도/캐싱까지는 넣지 않았고, 실패 시 Mock 데이터로 안전하게 대체한다)
+ * Axios로 OpenWeatherMap 실제 데이터를 불러오고, 로딩·에러 상태를 함께 관리한다.
+ * 지역이 30개라 Promise.all이 동시에 30번 호출된다. OpenWeatherMap 무료 플랜은
+ * 분당 60회까지 허용되므로 페이지 새로고침 한 번 정도는 문제없지만, 짧은 시간에
+ * 새로고침을 반복하면 429(Too Many Requests)가 날 수 있다. 재시도/캐싱까지는
+ * 넣지 않았고, 실패 시 Mock 데이터로 안전하게 대체한다.
  */
 onMounted(async () => {
   try {
@@ -206,10 +201,9 @@ function handleUpdateQuery(newQuery) {
 }
 
 /**
- * [피드백 반영] 카드를 클릭하면 바로 상세 페이지로 이동하게 해뒀더니, 화면이 바로
- * 바뀌어버려서 "카드를 클릭하면 선택 정보가 뜬다"는 기능을 눈으로 확인할 틈이
- * 없었다. 그래서 카드 클릭은 다시 "선택"만 하도록 되돌렸다. 상세 페이지로 가는
- * 길은 카드의 "상세보기" 버튼(handleClickDetail)으로만 남겨뒀다.
+ * 카드 클릭은 상세 페이지 이동 없이 "선택"만 한다 — 클릭 즉시 화면이 바뀌면
+ * 선택 정보가 떴다는 반응을 확인할 틈이 없기 때문이다. 상세 페이지로 가는 길은
+ * 카드의 "상세보기" 버튼(handleClickDetail)으로만 남겨뒀다.
  */
 function handleSelectCard(city) {
   selectedCityInfo.value = city
@@ -219,7 +213,7 @@ function handleClickDetail(city) {
   router.push(`/weather/${city.id}`)
 }
 
-/** [내가 추가한 함수] 즐겨찾기 토글. id 배열만 갈아끼운다 (불변 업데이트) */
+/** 즐겨찾기 토글. id 배열만 갈아끼운다 (불변 업데이트) */
 function toggleFavorite(city) {
   if (favoriteCityIds.value.includes(city.id)) {
     favoriteCityIds.value = favoriteCityIds.value.filter((id) => id !== city.id)
@@ -299,9 +293,9 @@ function toggleFavorite(city) {
     </BaseDashboardCard>
 
     <!--
-      [피드백 반영] 사이드에 두니 디자인 밸런스가 깨져서 다시 하단으로 옮겼다.
-      다만 그냥 페이지 맨 아래(normal flow)에 두면 스크롤을 끝까지 내려야만 보이니,
-      position: fixed로 뷰포트 바닥에 항상 붙어있게 했다.
+      사이드 패널 대신 화면 하단에 둔다 — 카드 그리드 옆에 세로로 긴 패널을
+      나란히 두면 디자인 밸런스가 깨진다. 페이지 맨 아래(normal flow)에 두면
+      스크롤을 끝까지 내려야만 보이니, position: fixed로 뷰포트 바닥에 고정한다.
     -->
     <SelectedCityPanel :city="selectedCityInfo" @click-detail="handleClickDetail" />
   </div>

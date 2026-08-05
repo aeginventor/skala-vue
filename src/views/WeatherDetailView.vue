@@ -17,12 +17,11 @@ import WeatherAnimation from '../components/WeatherAnimation.vue'
  * WeatherDetailView
  * - 라우트 경로: /weather/:cityId
  *
- * [버그 수정] Dock에서 도시 A 상세를 보다가 도시 B를 클릭하면 URL은 바뀌는데
- * 화면이 그대로였던 이유: 두 경로가 같은 라우트 레코드(`/weather/:cityId`)를 쓰기
- * 때문에 Vue Router가 컴포넌트 인스턴스를 "새로 만들지 않고 재사용"한다. 그런데
- * 데이터 로딩을 onMounted 안에만 넣어뒀으니, 이미 마운트된 상태에서는 파라미터가
- * 바뀌어도 다시 실행될 일이 없었다. 그래서 onMounted 대신 route.params.cityId를
- * `watch`로 감시하고, immediate:true로 최초 진입 시에도 한 번 실행되게 했다.
+ * 도시 A 상세를 보다가 Dock에서 도시 B를 클릭하면 URL은 바뀌지만, 두 경로가
+ * 같은 라우트 레코드(`/weather/:cityId`)를 쓰기 때문에 Vue Router는 컴포넌트
+ * 인스턴스를 새로 만들지 않고 재사용한다. 데이터 로딩을 onMounted에만 두면 이미
+ * 마운트된 상태에서 파라미터만 바뀌었을 때 다시 실행되지 않으므로, onMounted 대신
+ * route.params.cityId를 `watch`로 감시하고 immediate:true로 최초 진입도 함께 처리한다.
  */
 const route = useRoute()
 const cityDetail = ref(null)
@@ -123,10 +122,9 @@ const visibilityKm = computed(() => {
       </p>
 
       <!--
-        [피드백 반영] 원래는 이 hero 블록 위에 날씨 애니메이션을 별도 배너로 뒀는데,
-        그러면 바로 아래 원형 아이콘과 같은 정보를 두 번 보여주면서 시각적으로도
-        겹쳐 보였다. 그래서 배너를 없애고 왼쪽 아이콘 자리를 넓혀서(hero__icon)
-        그 안에 애니메이션을 직접 그리는 방식으로 바꿨다.
+        날씨 애니메이션은 별도 배너로 따로 두지 않고 hero 왼쪽 아이콘 자리(hero__icon)를
+        넓혀서 그 안에 바로 그린다. 배너로 분리하면 바로 아래 원형 아이콘과 같은
+        정보를 두 번 보여주면서 시각적으로도 겹쳐 보인다.
       -->
       <div class="hero">
         <div class="hero__icon">
@@ -248,9 +246,8 @@ const visibilityKm = computed(() => {
 }
 
 /*
- * [피드백 반영] 원래 76px였던 정적 아이콘 자리를 112px로 넓혀서, 그 안에
- * WeatherAnimation을 꽉 채워 그린다. overflow: hidden으로 원형 밖으로
- * 삐져나가는 빗방울/눈송이 등을 자연스럽게 잘라낸다.
+ * 112px 원형 안에 WeatherAnimation을 꽉 채워 그린다. overflow: hidden으로
+ * 원형 밖으로 삐져나가는 빗방울/눈송이 등을 자연스럽게 잘라낸다.
  */
 .hero__icon {
   width: 112px;

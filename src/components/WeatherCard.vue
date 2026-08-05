@@ -96,9 +96,8 @@ function isHot(rawCelsiusTemp) {
     </div>
 
     <!--
-      [피드백 반영] 카드 클릭으로는 더 이상 상세 페이지로 못 가고 "선택"만 되므로,
-      이 버튼이 상세 페이지로 가는 유일한 통로가 됐다. 그만큼 누르기 쉽게 폭 전체를
-      차지하는 큰 버튼으로 키웠다.
+      카드 클릭은 "선택"만 할 뿐이라, 이 버튼이 상세 페이지로 가는 유일한 통로다.
+      그만큼 누르기 쉽게 폭 전체를 차지하는 큰 버튼으로 잡았다.
     -->
     <button class="detail-btn ink-pressable" @click.stop="handleDetailClick">
       상세보기 <i class="fa-solid fa-arrow-right"></i>
