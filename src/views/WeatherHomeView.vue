@@ -3,6 +3,7 @@ import { ref, computed, watch, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import BaseDashboardCard from '../components/BaseDashboardCard.vue'
 import SearchBar from '../components/SearchBar.vue'
+import TempBoard from '../components/TempBoard.vue'
 import WeatherCard from '../components/WeatherCard.vue'
 import SelectedCityPanel from '../components/SelectedCityPanel.vue'
 import { getSubjectParticle } from '../utils/josa.js'
@@ -211,6 +212,8 @@ function toggleFavorite(city) {
     <BaseDashboardCard title="도시 검색" icon="fa-solid fa-magnifying-glass">
       <SearchBar :search-query="searchQuery" @update-query="handleUpdateQuery" />
     </BaseDashboardCard>
+
+    <TempBoard />
 
     <p v-if="!isLoading && tagline" class="tagline">
       <i class="fa-solid fa-lightbulb"></i> {{ tagline }}

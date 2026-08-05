@@ -8,9 +8,13 @@
  * 라벨·색·아이콘을 다 여기서 뽑는다. 기준이 여러 파일에 흩어지면 색과 라벨이 어긋난다.
  * 표는 높은 온도부터 내려가며 적어서, 처음 만족하는 칸이 곧 그 단계가 된다.
  */
+const INK = 'var(--color-ink)'
+const PAPER = 'var(--color-bg)'
+
 const TEMP_LEVELS = [
   {
     id: 'hot',
+    on: PAPER,
     label: '더움',
     min: 28,
     icon: 'fa-fire',
@@ -19,6 +23,7 @@ const TEMP_LEVELS = [
   },
   {
     id: 'warm',
+    on: INK,
     label: '따뜻',
     min: 21,
     icon: 'fa-temperature-three-quarters',
@@ -27,6 +32,7 @@ const TEMP_LEVELS = [
   },
   {
     id: 'mild',
+    on: INK,
     label: '선선',
     min: 14,
     icon: 'fa-temperature-half',
@@ -35,6 +41,7 @@ const TEMP_LEVELS = [
   },
   {
     id: 'chilly',
+    on: INK,
     label: '쌀쌀',
     min: 5,
     icon: 'fa-temperature-quarter',
@@ -43,6 +50,7 @@ const TEMP_LEVELS = [
   },
   {
     id: 'cold',
+    on: PAPER,
     label: '추움',
     min: -Infinity,
     icon: 'fa-snowflake',
@@ -57,7 +65,7 @@ const TEMP_LEVELS = [
  * @param {number} rawCelsius 항상 **원본 섭씨** 값을 넘겨야 한다. 화면이 화씨로 보이는
  *   중이라고 화씨 값을 넣으면 단계가 통째로 어긋난다(77°F는 25℃라 '따뜻'인데, 77을
  *   그대로 넣으면 '더움'이 된다). 단위 변환은 표시할 때만 하고 판정은 섭씨로 고정한다.
- * @returns {{id: string, label: string, icon: string, color: string, bg: string}}
+ * @returns {{id: string, label: string, on: string, icon: string, color: string, bg: string}}
  */
 export function getTempLevel(rawCelsius) {
   return TEMP_LEVELS.find((level) => rawCelsius >= level.min) ?? TEMP_LEVELS.at(-1)
