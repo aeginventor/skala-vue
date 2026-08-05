@@ -196,6 +196,15 @@ onBeforeUnmount(() => {
  * 꺼버렸으니(.dock--dragging) 더 이상 넉넉한 여백이 필요 없다. blur를 걷어내고
  * 여백을 다른 구분선과 비슷한 수준(8px)으로 줄여서, 도시 버튼들이 "전체"
  * 경계 바로 옆까지 딱 붙어 지나가는 깔끔한 느낌으로 바꿨다.
+ * [버그 재발/재수정] blur를 걷어내면서 페이드까지 통째로 없앴더니, 스크롤이
+ * 조금만 움직여도(정지 상태에서도) 뒤에 있는 도시 버튼의 둥근 모서리가 이
+ * 불투명 배경에 칼같이 잘려서 다시 각지게 보였다. 이전 페이드는 이 래퍼
+ * 바깥(-14px)까지 번져나가서 문제였던 거지, 페이드 자체가 문제는 아니었다.
+ * 그래서 페이드를 이 래퍼 "바깥으로 확장"하는 대신, 이미 있는 padding-right
+ * 8px 영역 안에서만 배경이 옅어지게(투명해지게) 했다. 이 영역은 scrollLeft
+ * 0에서 정확히 flex gap과 맞아떨어져 서울과 안 겹치던 자리라(위 -8px margin
+ * 참고), 페이드를 얹어도 정지 상태에서 서울을 더 가리지 않으면서, 스크롤 중
+ * 잘리는 모서리는 배경 속으로 스며들듯 부드럽게 보이게 된다.
  */
 .dock-pinned {
   position: sticky;
@@ -205,7 +214,12 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: stretch;
   gap: 6px;
-  background: var(--color-surface);
+  background: linear-gradient(
+    to right,
+    var(--color-surface) 0,
+    var(--color-surface) calc(100% - 8px),
+    transparent 100%
+  );
   padding: 0 8px 0 16px;
   margin-right: -8px;
 }
