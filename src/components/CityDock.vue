@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onBeforeUnmount } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useWeatherStore } from '../stores/weatherStore.js'
 import { getWeatherIcon } from '../utils/weatherIcon.js'
 
@@ -8,17 +8,22 @@ import { getWeatherIcon } from '../utils/weatherIcon.js'
  * CityDock — 맥북 Dock에서 아이디어를 가져온 상단 내비게이션.
  * - 라벨은 hover 없이 아이콘 아래 작은 글자로 항상 보인다.
  * - [버그 수정] "전체" 버튼은 스크롤 컨테이너(.dock) 안에서 `position: sticky`로
- *   왼쪽에 고정된다. "전체" 버튼 하나만 감싼 래퍼(.dock-pinned)를 sticky 컨테이너로
- *   두고, 그 래퍼가 왼쪽 여백(padding-left)까지 통째로 소유하게 했다. 원래는 이
- *   여백을 .dock 컨테이너의 padding으로 뒀는데, 스크롤 컨테이너 시작 지점의
- *   padding이 스크롤에 같이 딸려가는지는 브라우저마다 처리가 달라서, 그 틈으로
- *   뒤에 있는 도시 버튼이 살짝 비쳐 보이는 경우가 있었다. 여백 자체를 sticky
- *   래퍼 안으로 옮기니 항상 같은 배경으로 확실히 덮인다. 오른쪽은 padding-right +
- *   margin-right(-8px) 조합으로 원래 flex gap 자리까지 덮어서 다음 버튼과 겹치지 않는다.
- * - [버그 수정] 처음엔 스크롤 부드러움을 위해 scroll-snap을 걸어뒀는데, sticky로
- *   고정된 자식이 있는 상태에서 scroll-snap을 같이 쓰면 마우스를 올리기만 해도
- *   스냅 지점을 다시 계산하면서 맨 끝으로 스크롤이 튀는 버그가 있었다. 필수 기능이
- *   아니라서 scroll-snap 자체를 뺐다.
+ *   왼쪽에 고정된다. "전체" 버튼과 구분선을 하나로 감싼 래퍼(.dock-pinned)를 sticky
+ *   컨테이너로 두고, 그 래퍼가 왼쪽 여백(padding-left)까지 통째로 소유하게 했다.
+ *   원래는 이 여백을 .dock 컨테이너의 padding으로 뒀는데, 스크롤 컨테이너 시작
+ *   지점의 padding이 스크롤에 같이 딸려가는지는 브라우저마다 처리가 달라서, 그
+ *   틈으로 뒤에 있는 도시 버튼이 살짝 비쳐 보이는 경우가 있었다.
+ * - [버그 수정] 구분선도 원래는 이 래퍼 밖의 일반 형제 요소였는데, sticky가 아니라서
+ *   스크롤을 시작하는 순간 다른 도시 아이콘들과 같이 딸려가 "전체"와 지역 목록
+ *   사이의 경계가 스크롤 위치 0에서만 보이고 바로 사라졌다. 래퍼 안으로 옮겨서
+ *   전체 버튼과 한 몸으로 고정시켰다.
+ * - [다듬기] 위 고정 경계 바로 뒤에 오른쪽으로 옅어지는 그라데이션(.dock-pinned::after)을
+ *   깔아서, 스크롤되는 도시 버튼들이 각지게 뚝 끊기는 대신 배경 속으로 스며들듯
+ *   지나가게 했다. 그냥 딱 잘린 흰 상자처럼 보이던 걸 완화하기 위함.
+ * - [버그 수정] 마우스로 드래그하는 동안에는 커서가 지나가는 버튼에 hover 확대
+ *   효과가 계속 걸렸다. 이 확대(translateY + scale) 때문에 버튼이 원래 자리보다
+ *   커져서, 고정된 "전체" 영역 뒤를 지나갈 때 아래쪽 테두리가 살짝 삐져나와 보였다.
+ *   드래그 중에는 `.dock--dragging` 클래스로 hover 확대 자체를 꺼서 해결했다.
  * - 도시 아이콘은 고정된 위치 핀이 아니라, weatherStore.cities(Home에서 Axios로
  *   갱신한 실시간 값)를 그대로 참조해서 그 도시의 현재 날씨 상태에 맞는 아이콘을
  *   보여준다.
@@ -27,10 +32,14 @@ import { getWeatherIcon } from '../utils/weatherIcon.js'
  *   mousemove 때 그 차이만큼 scrollLeft를 직접 옮긴다. 버튼(RouterLink) 위에서
  *   시작해도 동작해야 해서, 일정 거리(4px) 이상 움직였을 때만 "드래그"로 인정하고
  *   그 경우에만 클릭 이벤트를 막아 실수로 페이지 이동이 되지 않게 했다.
+ * - [기능 변경] Dock 끝에 있던 "소개" 링크는 헤더에 전용 버튼이 생겨서 중복이라
+ *   빼고, 그 자리에 무작위 지역으로 이동하는 "랜덤" 버튼을 넣었다.
  */
 const route = useRoute()
+const router = useRouter()
 const weatherStore = useWeatherStore()
 const dockEl = ref(null)
+const isDragging = ref(false)
 
 let isPointerDown = false
 let dragMoved = false
@@ -39,6 +48,13 @@ let dragStartScrollLeft = 0
 
 function isActiveCity(cityId) {
   return route.params.cityId === cityId
+}
+
+function goToRandomCity() {
+  const cities = weatherStore.cities
+  if (cities.length === 0) return
+  const randomCity = cities[Math.floor(Math.random() * cities.length)]
+  router.push(`/weather/${randomCity.id}`)
 }
 
 function handleDragStart(event) {
@@ -56,7 +72,10 @@ function handleDragStart(event) {
 function handleDragMove(event) {
   if (!isPointerDown || !dockEl.value) return
   const delta = event.pageX - dragStartX
-  if (Math.abs(delta) > 4) dragMoved = true
+  if (Math.abs(delta) > 4) {
+    dragMoved = true
+    isDragging.value = true
+  }
   if (dragMoved) {
     dockEl.value.scrollLeft = dragStartScrollLeft - delta
   }
@@ -64,6 +83,7 @@ function handleDragMove(event) {
 
 function handleDragEnd() {
   isPointerDown = false
+  isDragging.value = false
   window.removeEventListener('mousemove', handleDragMove)
   window.removeEventListener('mouseup', handleDragEnd)
 }
@@ -87,6 +107,7 @@ onBeforeUnmount(() => {
     <nav
       ref="dockEl"
       class="dock"
+      :class="{ 'dock--dragging': isDragging }"
       aria-label="지역 바로가기 Dock"
       @mousedown="handleDragStart"
       @click.capture="handleDockClickCapture"
@@ -118,15 +139,15 @@ onBeforeUnmount(() => {
 
       <span class="dock-divider" aria-hidden="true"></span>
 
-      <RouterLink
-        to="/about"
+      <button
+        type="button"
         class="dock-item ink-pressable"
-        :class="{ 'dock-item--active': route.name === 'weather-about' }"
-        title="서비스 소개"
+        title="랜덤 지역 날씨"
+        @click="goToRandomCity"
       >
-        <i class="fa-solid fa-circle-info"></i>
-        <span class="dock-item__label">소개</span>
-      </RouterLink>
+        <i class="fa-solid fa-shuffle"></i>
+        <span class="dock-item__label">랜덤</span>
+      </button>
     </nav>
     <p class="dock-hint"><i class="fa-solid fa-arrows-left-right"></i> 옆으로 밀어서 30개 지역을 모두 볼 수 있어요</p>
   </div>
@@ -161,18 +182,11 @@ onBeforeUnmount(() => {
 }
 
 /*
- * "전체" 버튼을 스크롤 컨테이너(.dock) 왼쪽 끝에 고정.
+ * "전체" 버튼 + 구분선을 스크롤 컨테이너(.dock) 왼쪽 끝에 고정.
  * padding-right + 음수 margin-right 조합으로 이 래퍼의 배경이 flex gap 틈까지
  * 덮게 만들어서, 뒤로 스크롤되는 다른 도시 아이콘이 gap 사이로 비치거나
- * "전체" 버튼과 겹쳐 보이는 일이 없게 했다.
- *
- * [버그 수정] 처음엔 구분선(.dock-divider)을 이 래퍼 밖의 일반 형제 요소로 뒀는데,
- * 그 구분선은 sticky가 아니라서 스크롤을 시작하는 순간 다른 도시 아이콘들과 같이
- * 딸려가 버렸다. 그러면 "전체"와 지역 목록 사이의 경계가 스크롤 위치 0에서만
- * 잠깐 보이고 바로 사라졌다(드래그로 스크롤할 때도 마찬가지). 구분선을 이 sticky
- * 래퍼 "안"으로 옮겨서 전체 버튼과 한 몸으로 고정시켰다 — 이제 스크롤을 얼마나
- * 하든 항상 같은 자리에 남아있다. 자식(버튼+구분선)을 가로로 나란히 두기 위해
- * 래퍼 자체에도 flex를 줬다.
+ * "전체" 버튼과 겹쳐 보이는 일이 없게 했다. 오른쪽 여백을 이전보다 넉넉하게
+ * 잡아서(8px -> 14px) 확대되는 버튼이 있어도 덮을 여유를 더 뒀다.
  */
 .dock-pinned {
   position: sticky;
@@ -183,8 +197,25 @@ onBeforeUnmount(() => {
   align-items: stretch;
   gap: 6px;
   background: var(--color-surface);
-  padding: 0 8px 0 16px;
+  padding: 0 14px 0 16px;
   margin-right: -8px;
+}
+
+/*
+ * .dock-pinned 바로 뒤(오른쪽)에 옅어지는 그라데이션을 깔아서, 스크롤되는 도시
+ * 버튼들이 각지게 뚝 끊기는 대신 배경 속으로 스며들듯 지나가게 한다.
+ * .dock-pinned 자신은 sticky라 스크롤해도 화면에 그대로 붙어있으므로, 이
+ * 가상 요소도 같이 고정된 채로 남아 계속 같은 자리에서 페이드 역할을 한다.
+ */
+.dock-pinned::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -22px;
+  width: 22px;
+  height: 100%;
+  background: linear-gradient(to right, var(--color-surface), transparent);
+  pointer-events: none;
 }
 
 .dock-divider {
@@ -212,7 +243,9 @@ onBeforeUnmount(() => {
   background: var(--color-bg);
   color: var(--color-ink);
   text-decoration: none;
+  font-family: inherit;
   font-size: 17px;
+  padding: 0;
   transition: transform 0.15s ease, background-color 0.15s ease;
 }
 
@@ -228,6 +261,18 @@ onBeforeUnmount(() => {
   transform: translateY(-6px) rotate(-3deg) scale(1.08);
   background: var(--color-primary-bg);
   z-index: 4;
+}
+
+/* 드래그로 스크롤하는 동안엔 커서가 지나가는 버튼마다 확대 효과가 걸려 삐져나와 보이는
+   문제가 있어서, 드래그 중에는 hover 확대를 꺼서 버튼들이 평평하게 지나가게 한다. */
+.dock--dragging .dock-item:hover {
+  transform: none;
+  background: var(--color-bg);
+  z-index: auto;
+}
+
+.dock--dragging .dock-item--active:hover {
+  background: var(--color-primary);
 }
 
 .dock-item--active {
