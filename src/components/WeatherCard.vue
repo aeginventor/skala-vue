@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useConfigStore } from '../stores/configStore.js'
 import { getWeatherTheme } from '../utils/weatherIcon.js'
+import { getTempLevel } from '../utils/tempLevel.js'
 import WeatherGlyph from './WeatherGlyph.vue'
 
 /**
@@ -58,10 +59,8 @@ function handleFavoriteClick() {
   emit('toggle-favorite', city)
 }
 
-/** 25도(섭씨) 기준. 단위가 화씨로 바뀌어도 판단은 항상 원본 섭씨 값으로 고정한다. */
-function isHot(rawCelsiusTemp) {
-  return rawCelsiusTemp >= 25
-}
+/** 단위가 화씨로 바뀌어도 단계 판정은 항상 원본 섭씨 값으로 고정한다(tempLevel.js 주석 참고). */
+const tempLevel = computed(() => getTempLevel(city.temp))
 </script>
 
 <template>
@@ -88,11 +87,8 @@ function isHot(rawCelsiusTemp) {
     <p class="tile__region">{{ city.region }}</p>
     <p class="tile__temp">{{ displayTemp }}<span class="tile__unit">{{ configStore.unitSymbol }}</span></p>
 
-    <span v-if="isHot(city.temp)" class="badge badge--hot">
-      <i class="fa-solid fa-fire"></i> 더움
-    </span>
-    <span v-else class="badge badge--cool">
-      <i class="fa-solid fa-snowflake"></i> 선선함
+    <span class="badge" :style="{ '--badge-color': tempLevel.color, '--badge-bg': tempLevel.bg }">
+      <i :class="['fa-solid', tempLevel.icon]"></i> {{ tempLevel.label }}
     </span>
 
     <div class="tile__footer">
@@ -233,6 +229,7 @@ function isHot(rawCelsiusTemp) {
   margin-left: 2px;
 }
 
+/* 색은 기온 단계(tempLevel)가 정해서 인라인 변수(--badge-*)로 내려온다 */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -243,16 +240,8 @@ function isHot(rawCelsiusTemp) {
   border-radius: 999px;
   border: var(--border-thin);
   margin-bottom: 12px;
-}
-
-.badge--hot {
-  background: var(--color-hot-bg);
-  color: var(--color-hot);
-}
-
-.badge--cool {
-  background: var(--color-cool-bg);
-  color: var(--color-cool);
+  background: var(--badge-bg);
+  color: var(--badge-color);
 }
 
 .tile__footer {

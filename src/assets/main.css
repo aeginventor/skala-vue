@@ -42,10 +42,22 @@ body {
   --color-storm: oklch(58% 0.17 305);
   --color-storm-bg: oklch(92% 0.05 305);
 
-  --color-hot: var(--color-primary);
-  --color-hot-bg: var(--color-primary-bg);
-  --color-cool: var(--color-snow);
-  --color-cool-bg: var(--color-snow-bg);
+  /*
+   * 기온 5단계(추움 -> 더움) 순차 램프. 날씨색과 달리 여기는 "순서"가 의미를 가지므로
+   * 색상(H)을 파랑에서 주황까지 한 방향으로만 돌리고 명도·채도는 비슷하게 유지한다.
+   * 중간에 초록을 한 칸 끼워 넣어야 양 끝이 서로 얼마나 먼지가 눈에 들어온다.
+   */
+  --color-temp-cold: oklch(55% 0.17 250);
+  --color-temp-chilly: oklch(65% 0.13 220);
+  --color-temp-mild: oklch(63% 0.13 165);
+  --color-temp-warm: oklch(70% 0.16 65);
+  --color-temp-hot: oklch(58% 0.2 30);
+
+  --color-temp-cold-bg: oklch(94% 0.04 250);
+  --color-temp-chilly-bg: oklch(95% 0.035 220);
+  --color-temp-mild-bg: oklch(95% 0.035 165);
+  --color-temp-warm-bg: oklch(95% 0.045 65);
+  --color-temp-hot-bg: oklch(94% 0.045 30);
 
   --color-success: oklch(62% 0.15 145);
   --color-success-bg: oklch(94% 0.05 145);
