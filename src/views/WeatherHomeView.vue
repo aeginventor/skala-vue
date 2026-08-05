@@ -42,8 +42,10 @@ const filteredWeatherList = computed(() => {
 
 /**
  * 정렬 기준 비교 함수.
- * '날씨별'은 status 문자열이 아니라 대분류로 묶는다 — "튼구름"과 "약간 흐림"은 문자열이
- * 달라도 같은 구름이다. 같은 묶음 안에서는 이름순으로 2차 정렬해 순서를 고정한다.
+ * '날씨별'은 세 단계로 본다. 먼저 대분류로 크게 묶고(“튼구름”과 “약간 흐림”은 문자열이
+ * 달라도 같은 구름이다), 그 안에서 status 문자열이 같은 것끼리 다시 붙인 뒤,
+ * 마지막으로 이름순으로 순서를 고정한다. 2단계가 없으면 같은 구름 묶음 안에서
+ * "튼구름"과 "흐림"이 이름순으로 섞여 버린다.
  */
 function compareBySortOrder(a, b) {
   if (sortOrder.value === 'temp') return b.temp - a.temp // 높은 기온 순
@@ -51,7 +53,12 @@ function compareBySortOrder(a, b) {
     const categoryDiff =
       WEATHER_CATEGORY_ORDER.indexOf(getWeatherCategory(a.status)) -
       WEATHER_CATEGORY_ORDER.indexOf(getWeatherCategory(b.status))
-    return categoryDiff !== 0 ? categoryDiff : a.name.localeCompare(b.name, 'ko')
+    if (categoryDiff !== 0) return categoryDiff
+
+    const statusDiff = a.status.localeCompare(b.status, 'ko')
+    if (statusDiff !== 0) return statusDiff
+
+    return a.name.localeCompare(b.name, 'ko')
   }
   return a.name.localeCompare(b.name, 'ko') // 이름순
 }
