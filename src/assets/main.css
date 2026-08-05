@@ -7,71 +7,65 @@ body {
 }
 
 /**
- * 디자인 토큰 v3 — "카툰/스티커" 톤은 유지하되, 색상을 OKLCH 램프로 재정의.
- * - 이전 버전은 색을 하나씩 hex로 골라 넣어서, hot=primary·favorite=sun·
- *   warning-bg=sun-bg가 우연히 같은 값을 따로 타이핑한 것처럼 보였다. 지금은
- *   명도(L)·채도(C)를 그룹별로 고정하고 색상(H)만 바꿔서 뽑고, 겹치는 의미의
- *   토큰은 새 hex 대신 다른 토큰을 그대로 참조(alias)한다.
- * - ink/primary도 요즘 생성형 UI에서 흔한 인디고 네이비(#22223B)·코랄(#FF6B4A)
- *   대신 더 따뜻한 hue(잉크는 브라운블랙, 프라이머리는 테라코타)로 옮겼다.
- * - 하드 섀도우(--shadow-hard)는 blur 없이 순수 offset만 주는 방식이라, 스티커를
- *   화면에 붙여놓은 듯한 느낌을 준다. 카드/버튼을 누르면(:active) 이 그림자를
- *   0으로 줄이고 살짝 이동시켜서 "눌리는" 촉감을 흉내냈다.
- * - 날씨 상태별 색(맑음=노랑, 비=파랑, 흐림=회청, 눈=하늘, 뇌우=보라)은
- *   weatherIcon.js 의 getWeatherTheme() 에서 이 변수들을 그대로 참조한다.
+ * 디자인 토큰 — 색은 "슬롯마다 하나씩" 고르지 않고 **잉크 다섯 개에서 전부 섞어 쓴다.**
+ *
+ * 예전에는 의미가 생길 때마다 색을 하나씩 만들어서 토큰이 서른세 개까지 늘었고,
+ * 대부분 옅은 쌍둥이(-bg)까지 달고 있었다. 그런데 인쇄물은 잉크 네댓 개로 전부
+ * 해결한다. 밝은 색이 필요하면 새 색을 고르는 게 아니라 같은 잉크를 종이에 옅게
+ * 얹는다(=농도를 낮춘다). 아래 color-mix가 하는 일이 정확히 그거다.
+ *
+ * 잉크 값을 일부러 들쭉날쭉하게 잡은 이유: 명도·채도를 나란히 맞춰 색상만 돌리면
+ * 그 규칙성 자체가 "계산해서 뽑은 색"으로 보인다. 채도를 0.065~0.185로 벌리고
+ * 순색을 피해(노랑은 주황 쪽으로 눌러 황토, 파랑은 채도를 낮춰 탁하게) 섞어 쓴
+ * 잉크처럼 보이게 했다.
+ *
+ * 하드 섀도우(--shadow-hard)는 blur 없이 순수 offset만 주는 방식이라, 스티커를
+ * 화면에 붙여놓은 듯한 느낌을 준다. 카드/버튼을 누르면(:active) 이 그림자를
+ * 0으로 줄이고 살짝 이동시켜서 "눌리는" 촉감을 흉내냈다.
  */
 :root {
+  /* 종이와 검정 잉크 */
   --color-bg: #fff6e9;
   --color-surface: #ffffff;
   --color-ink: oklch(24% 0.035 55);
   --color-muted: oklch(52% 0.02 55);
-  --color-border: var(--color-ink);
 
-  --color-primary: oklch(64% 0.19 35);
-  --color-primary-dark: oklch(52% 0.19 35);
-  --color-primary-bg: oklch(93% 0.05 35);
+  /* 이 다섯 개가 전부다. 아래 색은 모두 여기서 나온다. */
+  --ink-vermillion: oklch(57% 0.185 33);
+  --ink-ochre: oklch(73% 0.135 72);
+  --ink-slate: oklch(48% 0.085 248);
+  --ink-sage: oklch(72% 0.062 150);
+  --ink-plum: oklch(38% 0.105 340);
 
-  /*
-   * 날씨색은 "옅게 물들이는 색"이 아니라 "종이에 얹는 잉크"다. 카드 배경을 연하게
-   * 칠하는 대신 아이콘 원을 이 색으로 꽉 채우기 때문에, 파스텔이 아니라 인쇄 잉크처럼
-   * 진해야 한다. 색마다 밝기가 다른 건 의도한 것이다 — 노란 해는 원래 밝고 먹구름은
-   * 원래 어둡다. 대신 그 위에 얹는 글자색이 달라져야 해서, 어떤 색을 얹을지는
-   * weatherIcon.js의 onAccent가 색과 같은 표에서 함께 정한다.
-   */
-  --color-sun: oklch(80% 0.19 85);
-  --color-sun-bg: oklch(95% 0.05 85);
-  --color-rain: oklch(55% 0.2 250);
-  --color-rain-bg: oklch(93% 0.04 255);
-  --color-cloud: oklch(60% 0.035 250);
-  --color-cloud-bg: oklch(93% 0.01 250);
-  --color-snow: oklch(74% 0.14 200);
-  --color-snow-bg: oklch(94% 0.04 205);
-  --color-storm: oklch(50% 0.21 300);
-  --color-storm-bg: oklch(92% 0.05 305);
+  --color-primary: var(--ink-vermillion);
+  --color-primary-bg: color-mix(in oklab, var(--ink-vermillion) 14%, var(--color-bg));
 
   /*
-   * 기온 5단계(추움 -> 더움) 순차 램프. 날씨색과 달리 여기는 "순서"가 의미를 가지므로
-   * 색상(H)을 파랑에서 주황까지 한 방향으로만 돌리고 명도·채도는 비슷하게 유지한다.
-   * 중간에 초록을 한 칸 끼워 넣어야 양 끝이 서로 얼마나 먼지가 눈에 들어온다.
+   * 날씨. 아이콘 원을 이 색으로 꽉 채우므로 파스텔이 아니라 인쇄 잉크처럼 진해야 한다.
+   * 색마다 밝기가 다른 건 의도한 것이다 — 황토색 해는 원래 밝고 먹구름은 원래 어둡다.
+   * 그래서 그 위에 얹는 글자색(onAccent)은 weatherIcon.js가 색과 같은 표에서 함께 정한다.
+   * 구름이 회색인 것도 새 회색을 만든 게 아니라 검정 잉크를 종이에 45%만 얹은 것이다.
    */
-  --color-temp-cold: oklch(55% 0.17 250);
-  --color-temp-chilly: oklch(65% 0.13 220);
-  --color-temp-mild: oklch(63% 0.13 165);
-  --color-temp-warm: oklch(70% 0.16 65);
-  --color-temp-hot: oklch(58% 0.2 30);
+  --color-sun: var(--ink-ochre);
+  --color-sun-bg: color-mix(in oklab, var(--ink-ochre) 18%, var(--color-bg));
+  --color-cloud: color-mix(in oklab, var(--color-ink) 58%, var(--color-bg));
+  --color-rain: var(--ink-slate);
+  --color-snow: color-mix(in oklab, var(--ink-slate) 42%, var(--color-bg));
+  --color-storm: var(--ink-plum);
 
-  --color-temp-cold-bg: oklch(94% 0.04 250);
-  --color-temp-chilly-bg: oklch(95% 0.035 220);
-  --color-temp-mild-bg: oklch(95% 0.035 165);
-  --color-temp-warm-bg: oklch(95% 0.045 65);
-  --color-temp-hot-bg: oklch(94% 0.045 30);
+  /*
+   * 기온 5단계. 새 색을 다섯 개 고르는 대신 **같은 잉크를 차가운 쪽부터 늘어놓았다.**
+   * 파랑 잉크(짙게 -> 옅게) → 탁한 녹 → 황토 → 주홍 순이라, 색상환을 균등하게 돌린
+   * 순차 스케일보다 "골라 쓴" 느낌이 난다.
+   */
+  --color-temp-cold: color-mix(in oklab, var(--ink-slate) 88%, var(--color-ink));
+  --color-temp-chilly: color-mix(in oklab, var(--ink-slate) 62%, var(--color-bg));
+  --color-temp-mild: var(--ink-sage);
+  --color-temp-warm: var(--ink-ochre);
+  --color-temp-hot: var(--ink-vermillion);
 
-  --color-success: oklch(62% 0.15 145);
-  --color-success-bg: oklch(94% 0.05 145);
-  --color-warning: oklch(55% 0.13 75);
-  --color-warning-bg: var(--color-sun-bg);
-
-  --color-favorite: var(--color-sun);
+  --color-warning: color-mix(in oklab, var(--ink-ochre) 72%, var(--color-ink));
+  --color-favorite: var(--ink-ochre);
 
   /*
    * 네 모서리를 일부러 조금씩 다르게 잡아 자를 대고 그린 느낌을 없앤다.

@@ -435,13 +435,18 @@ function toggleFavorite(city) {
   padding: 12px 0;
 }
 
+/*
+ * 배너는 옅은 색으로 면을 칠하지 않는다. 종이 위에 잉크 테두리를 두르고 왼쪽에 굵은
+ * 색 띠만 세우는, 인쇄물에서 쓰는 강조 방식이다. 파스텔 면이 사라지면서도 눈에는 더 띈다.
+ */
 .tagline {
   margin: 0;
   font-size: 13px;
   font-weight: 600;
   color: var(--color-ink);
-  background: var(--color-primary-bg);
+  background: var(--color-surface);
   border: var(--border-thin);
+  border-left: 7px solid var(--color-primary);
   border-radius: var(--radius-sm);
   padding: 12px 16px;
   display: flex;
@@ -457,20 +462,27 @@ function toggleFavorite(city) {
   margin: 0;
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-warning);
-  background: var(--color-warning-bg);
+  color: var(--color-ink);
+  background: var(--color-surface);
   border: var(--border-thin);
+  border-left: 7px solid var(--color-warning);
   border-radius: var(--radius-sm);
   padding: 10px 14px;
+}
+
+.fetch-error i,
+.mock-notice i {
+  color: var(--color-warning);
 }
 
 .mock-notice {
   margin: 0;
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-warning);
-  background: var(--color-warning-bg);
+  color: var(--color-ink);
+  background: var(--color-surface);
   border: var(--border-thin);
+  border-left: 7px solid var(--color-warning);
   border-radius: var(--radius-sm);
   padding: 10px 14px;
   display: flex;

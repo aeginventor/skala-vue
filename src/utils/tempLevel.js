@@ -18,8 +18,7 @@ const TEMP_LEVELS = [
     label: '더움',
     min: 28,
     icon: 'fa-fire',
-    color: 'var(--color-temp-hot)',
-    bg: 'var(--color-temp-hot-bg)'
+    color: 'var(--color-temp-hot)'
   },
   {
     id: 'warm',
@@ -27,8 +26,7 @@ const TEMP_LEVELS = [
     label: '따뜻',
     min: 21,
     icon: 'fa-temperature-three-quarters',
-    color: 'var(--color-temp-warm)',
-    bg: 'var(--color-temp-warm-bg)'
+    color: 'var(--color-temp-warm)'
   },
   {
     id: 'mild',
@@ -36,8 +34,7 @@ const TEMP_LEVELS = [
     label: '선선',
     min: 14,
     icon: 'fa-temperature-half',
-    color: 'var(--color-temp-mild)',
-    bg: 'var(--color-temp-mild-bg)'
+    color: 'var(--color-temp-mild)'
   },
   {
     id: 'chilly',
@@ -45,8 +42,7 @@ const TEMP_LEVELS = [
     label: '쌀쌀',
     min: 5,
     icon: 'fa-temperature-quarter',
-    color: 'var(--color-temp-chilly)',
-    bg: 'var(--color-temp-chilly-bg)'
+    color: 'var(--color-temp-chilly)'
   },
   {
     id: 'cold',
@@ -54,8 +50,7 @@ const TEMP_LEVELS = [
     label: '추움',
     min: -Infinity,
     icon: 'fa-snowflake',
-    color: 'var(--color-temp-cold)',
-    bg: 'var(--color-temp-cold-bg)'
+    color: 'var(--color-temp-cold)'
   }
 ]
 
@@ -65,7 +60,7 @@ const TEMP_LEVELS = [
  * @param {number} rawCelsius 항상 **원본 섭씨** 값을 넘겨야 한다. 화면이 화씨로 보이는
  *   중이라고 화씨 값을 넣으면 단계가 통째로 어긋난다(77°F는 25℃라 '따뜻'인데, 77을
  *   그대로 넣으면 '더움'이 된다). 단위 변환은 표시할 때만 하고 판정은 섭씨로 고정한다.
- * @returns {{id: string, label: string, on: string, icon: string, color: string, bg: string}}
+ * @returns {{id: string, label: string, on: string, icon: string, color: string}}
  */
 export function getTempLevel(rawCelsius) {
   return TEMP_LEVELS.find((level) => rawCelsius >= level.min) ?? TEMP_LEVELS.at(-1)
