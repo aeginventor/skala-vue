@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useConfigStore } from '../stores/configStore.js'
 import { getWeatherTheme } from '../utils/weatherIcon.js'
+import { getObjectParticle } from '../utils/josa.js'
 import WeatherGlyph from './WeatherGlyph.vue'
 
 /**
@@ -34,6 +35,12 @@ const displayTemp = computed(() => {
   return rawTemp
 })
 
+/** 도시 이름 받침에 따라 "을/를"이 갈린다 — 서울을, 대구를 (utils/josa.js) */
+const selectionMessage = computed(() => {
+  if (!city) return ''
+  return `${city.name}${getObjectParticle(city.name)} 선택하셨습니다.`
+})
+
 function handleDetailClick() {
   if (city) emit('click-detail', city)
 }
@@ -63,6 +70,8 @@ function handleDetailClick() {
             {{ displayTemp }}{{ configStore.unitSymbol }} · {{ city.status }}
           </p>
         </div>
+
+        <p class="selected-bar__message">{{ selectionMessage }}</p>
 
         <div class="selected-bar__stats">
           <span><i class="fa-solid fa-droplet"></i> {{ city.humidity }}%</span>
@@ -130,8 +139,22 @@ function handleDetailClick() {
 }
 
 .selected-bar__info {
+  min-width: 0;
+}
+
+/* 남는 폭을 전부 가져가서 바 한가운데에 놓이게 한다 */
+.selected-bar__message {
   flex: 1;
   min-width: 0;
+  margin: 0;
+  text-align: center;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .selected-bar__name {
@@ -191,6 +214,12 @@ function handleDetailClick() {
   color: var(--color-muted);
   text-align: center;
   width: 100%;
+}
+
+@media (max-width: 720px) {
+  .selected-bar__message {
+    display: none;
+  }
 }
 
 @media (max-width: 560px) {
