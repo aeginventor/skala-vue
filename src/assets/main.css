@@ -126,8 +126,13 @@ a,
 li,
 select,
 .ink-pressable {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Ccircle cx='15' cy='15' r='7' fill='%23FF6B4A' stroke='%2322223B' stroke-width='2'/%3E%3Cg stroke='%2322223B' stroke-width='2' stroke-linecap='round'%3E%3Cline x1='15' y1='1' x2='15' y2='5'/%3E%3Cline x1='15' y1='25' x2='15' y2='29'/%3E%3Cline x1='1' y1='15' x2='5' y2='15'/%3E%3Cline x1='25' y1='15' x2='29' y2='15'/%3E%3C/g%3E%3C/svg%3E")
-    15 15, pointer;
+  /* [시인성 개선] 기존엔 기본 커서(해 모양, 8방향 살)와 색만 다르고 모양은
+     거의 같은 4방향 살 커서라, 실제 렌더 크기(28~30px)에서는 거의 구분이
+     안 됐다. 살을 아예 없애고 과녁(굵은 링 + 흰 중심점) 모양으로 바꾸고
+     크기도 눈에 띄게 키워서, 실루엣 자체가 달라 스치듯 봐도 클릭 가능한
+     지점 위에 있다는 걸 바로 알아챌 수 있게 했다. */
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='11' fill='%23FF6B4A' stroke='%2322223B' stroke-width='3'/%3E%3Ccircle cx='20' cy='20' r='3.5' fill='%23FFF6E9'/%3E%3C/svg%3E")
+    20 20, pointer;
 }
 
 input,
