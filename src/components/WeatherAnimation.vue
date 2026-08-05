@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { getWeatherCategory } from '../utils/weatherIcon.js'
-import { CLOUD, BOLT, BOLT_VIEWBOX } from '../utils/glyphPaths.js'
+import { CLOUD, BOLT, BOLT_VIEWBOX, getCloudCount } from '../utils/glyphPaths.js'
 
 /**
  * WeatherAnimation
@@ -19,14 +19,46 @@ import { CLOUD, BOLT, BOLT_VIEWBOX } from '../utils/glyphPaths.js'
  *   "우수수 떨어지는" 느낌이 나서, 렌더링 전에 미리 배열로 계산해 둔다.
  */
 // Vue 3.5부터 props 구조분해가 정식 지원되어, 꺼내 써도 반응형이 유지된다.
-const { status } = defineProps({
+const { status, clouds } = defineProps({
   status: {
     type: String,
     required: true
+  },
+  /** 구름 양(%). 구름 날씨일 때 떠다니는 구름 개수를 정한다. 없으면 한 개. */
+  clouds: {
+    type: Number,
+    default: null
   }
 })
 
 const category = computed(() => getWeatherCategory(status))
+
+/**
+ * 떠다니는 구름들. 개수는 카드 아이콘과 같은 기준(getCloudCount)을 써서 같은 도시가
+ * 두 화면에서 다르게 보이지 않게 한다. 개수가 늘수록 하나하나를 작게 그리고, 속도와
+ * 높이를 서로 어긋나게 줘야 한 덩어리로 뭉쳐 보이지 않고 각자 흘러가는 느낌이 난다.
+ */
+const driftingClouds = computed(() => {
+  const sizes = {
+    1: [{ size: 46, top: 34, duration: 7.5 }],
+    2: [
+      { size: 30, top: 18, duration: 10 },
+      { size: 40, top: 44, duration: 6.5 }
+    ],
+    3: [
+      { size: 24, top: 14, duration: 11.5 },
+      { size: 30, top: 34, duration: 8.5 },
+      { size: 36, top: 56, duration: 6 }
+    ]
+  }
+
+  return sizes[getCloudCount(clouds)].map((cloud, i) => ({
+    ...cloud,
+    // 뒤쪽(작은) 구름일수록 옅게 해서 앞뒤 거리가 느껴지게 한다
+    opacity: i === 0 ? 0.72 : 1,
+    delay: i * -2.5
+  }))
+})
 
 const raindrops = Array.from({ length: 10 }, (_, i) => ({
   left: (i * 10.3) % 100,
@@ -51,10 +83,24 @@ const snowflakes = Array.from({ length: 8 }, (_, i) => ({
       </div>
     </template>
 
-    <!-- 구름: 구름 두 덩이가 서로 다른 속도로 둥둥 지나감 -->
+    <!-- 구름: 구름 양만큼(1~3개) 서로 다른 속도로 둥둥 지나감 -->
     <template v-else-if="category === 'cloud'">
-      <svg class="cloud cloud--back" viewBox="0 0 48 48"><path :d="CLOUD" /></svg>
-      <svg class="cloud cloud--front" viewBox="0 0 48 48"><path :d="CLOUD" /></svg>
+      <svg
+        v-for="(cloud, i) in driftingClouds"
+        :key="i"
+        class="cloud cloud--drifting"
+        viewBox="0 0 48 48"
+        :style="{
+          width: cloud.size + 'px',
+          height: cloud.size + 'px',
+          top: cloud.top + 'px',
+          opacity: cloud.opacity,
+          animationDuration: cloud.duration + 's',
+          animationDelay: cloud.delay + 's'
+        }"
+      >
+        <path :d="CLOUD" />
+      </svg>
     </template>
 
     <!-- 비: 구름 아래로 빗방울이 계속 떨어짐 -->
@@ -201,17 +247,11 @@ const snowflakes = Array.from({ length: 8 }, (_, i) => ({
   stroke-linejoin: round;
 }
 
-.cloud--back {
-  top: 18px;
-  width: 30px;
-  height: 30px;
-  opacity: 0.7;
-  animation: drift-back 10s linear infinite;
-}
-
-.cloud--front {
-  top: 40px;
-  animation: drift-front 6.5s linear infinite;
+/* 크기·높이·속도는 구름 개수에 따라 스크립트에서 인라인으로 내려준다 */
+.cloud--drifting {
+  animation-name: drift;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
 }
 
 .cloud--rain,
@@ -222,18 +262,9 @@ const snowflakes = Array.from({ length: 8 }, (_, i) => ({
   transform: translateX(-50%);
 }
 
-@keyframes drift-back {
+@keyframes drift {
   from {
-    left: -30%;
-  }
-  to {
-    left: 120%;
-  }
-}
-
-@keyframes drift-front {
-  from {
-    left: -35%;
+    left: -40%;
   }
   to {
     left: 125%;

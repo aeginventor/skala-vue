@@ -147,7 +147,7 @@ const visibilityKm = computed(() => {
       -->
       <div class="hero hand-rule-bottom">
         <div class="hero__icon">
-          <WeatherAnimation :status="cityDetail.status" />
+          <WeatherAnimation :status="cityDetail.status" :clouds="cityDetail.cloudsPercent" />
         </div>
         <div>
           <p class="hero__region"><i class="fa-solid fa-location-dot"></i> {{ cityDetail.region }}</p>

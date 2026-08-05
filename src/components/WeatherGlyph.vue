@@ -1,7 +1,16 @@
 <script setup>
 import { computed } from 'vue'
 import { getWeatherGlyph } from '../utils/weatherIcon.js'
-import { CLOUD, SUN_CORE, SUN_RAYS, RAIN, BOLT, FOG } from '../utils/glyphPaths.js'
+import {
+  CLOUD,
+  SUN_CORE,
+  SUN_RAYS,
+  RAIN,
+  BOLT,
+  FOG,
+  CLOUD_LAYOUTS,
+  getCloudCount
+} from '../utils/glyphPaths.js'
 
 /**
  * WeatherGlyph — 날씨 상태를 손으로 그린 듯한 SVG 아이콘으로 그린다.
@@ -19,14 +28,26 @@ import { CLOUD, SUN_CORE, SUN_RAYS, RAIN, BOLT, FOG } from '../utils/glyphPaths.
  * 면으로 채운 실루엣을 기본으로 삼았다. 광선·빗줄기·안개선처럼 선이어야 자연스러운
  * 요소만 stroke로 그리고 끝을 둥글게(stroke-linecap) 해서 붓끝 느낌을 준다.
  */
-const { status } = defineProps({
+const { status, clouds } = defineProps({
   status: {
     type: String,
     default: ''
+  },
+  /**
+   * 구름 양(%). 넘기면 구름 날씨일 때 양에 따라 구름을 1~3개로 그린다.
+   * 기본값이 null이라 **안 넘기면 지금까지처럼 한 개**다 — Dock(17px)이나 예보(16px)처럼
+   * 작아서 여러 개가 뭉개지는 자리, 그리고 구름 양을 아예 모르는 자리를 위한 기본값이다.
+   */
+  clouds: {
+    type: Number,
+    default: null
   }
 })
 
 const glyph = computed(() => getWeatherGlyph(status))
+
+/** 구름 계열 그림에만 개수가 의미 있다. 비·눈·뇌우는 강수에 자리를 내줘야 해서 한 개로 둔다. */
+const cloudLayout = computed(() => CLOUD_LAYOUTS[getCloudCount(clouds)])
 </script>
 
 <template>
@@ -43,8 +64,16 @@ const glyph = computed(() => getWeatherGlyph(status))
       />
     </template>
 
-    <!-- 흐림/구름: 구름 하나만 큼직하게 -->
-    <path v-else-if="glyph === 'cloud'" :d="CLOUD" />
+    <!-- 흐림/구름: 구름 양이 많을수록 여러 개를, 대신 하나하나는 작게 -->
+    <template v-else-if="glyph === 'cloud'">
+      <g
+        v-for="(cloud, i) in cloudLayout"
+        :key="i"
+        :transform="`translate(${cloud.x} ${cloud.y}) scale(${cloud.scale})`"
+      >
+        <path :d="CLOUD" />
+      </g>
+    </template>
 
     <!--
       비/눈/뇌우/안개는 전부 "위에 구름, 아래에 무언가" 구조라 구름을 같은 위치로

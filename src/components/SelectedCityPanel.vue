@@ -51,7 +51,11 @@ function handleDetailClick() {
           class="selected-bar__icon-wrap"
           :style="{ '--panel-accent': theme.accent, '--panel-on-accent': theme.onAccent }"
         >
-          <WeatherGlyph :status="city.status" class="selected-bar__icon" />
+          <WeatherGlyph
+            :status="city.status"
+            :clouds="city.cloudsPercent"
+            class="selected-bar__icon"
+          />
         </div>
 
         <div class="selected-bar__info">

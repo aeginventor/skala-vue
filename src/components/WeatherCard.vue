@@ -80,7 +80,7 @@ const tempLevel = computed(() => getTempLevel(city.temp))
     </button>
 
     <div class="tile__icon-wrap">
-      <WeatherGlyph :status="city.status" class="tile__icon" />
+      <WeatherGlyph :status="city.status" :clouds="city.cloudsPercent" class="tile__icon" />
     </div>
 
     <p class="tile__name">{{ city.name }}</p>

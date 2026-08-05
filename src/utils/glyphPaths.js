@@ -38,6 +38,39 @@ export const BOLT = 'M28 27 L17.5 41 L23.5 41.5 L20.5 47.5 L31 33.5 L25 33 Z'
  */
 export const BOLT_VIEWBOX = '16.5 26 16 23'
 
+/**
+ * 구름 양(%)을 그릴 구름 개수로 바꾼다.
+ * 카드 아이콘과 상세 페이지 애니메이션이 같은 기준을 써야 같은 도시가 두 화면에서
+ * 다른 개수로 보이지 않는다.
+ *
+ * @param {number|null|undefined} cloudsPercent 없으면(예: 예보 슬롯) 1개로 본다.
+ *   0개는 만들지 않는다 — 구름 날씨인데 구름이 하나도 없으면 그림이 비어 버린다.
+ */
+export function getCloudCount(cloudsPercent) {
+  if (typeof cloudsPercent !== 'number') return 1
+  if (cloudsPercent >= 75) return 3
+  if (cloudsPercent >= 40) return 2
+  return 1
+}
+
+/**
+ * 구름을 몇 개 그리느냐에 따른 배치. 개수가 늘수록 하나하나를 작게 그린다 —
+ * 같은 크기로 여러 개를 넣으면 작은 화면에서 서로 뭉개져 덩어리로만 보인다.
+ * 배열 뒤쪽이 앞에 겹쳐 그려지므로 가장 큰 구름을 마지막에 둔다.
+ */
+export const CLOUD_LAYOUTS = {
+  1: [{ scale: 1, x: 0, y: 0 }],
+  2: [
+    { scale: 0.55, x: 20, y: 3 },
+    { scale: 0.78, x: 0, y: 13 }
+  ],
+  3: [
+    { scale: 0.44, x: 1, y: 5 },
+    { scale: 0.5, x: 23, y: 2 },
+    { scale: 0.66, x: 6, y: 17 }
+  ]
+}
+
 /** 바닥에 깔린 안개를 나타내는 물결선 두 줄 */
 export const FOG =
   'M8 33.5 C12.5 30.5 17 36.5 22.5 33.8 C28 31.1 33.5 36.5 41 32.8 ' +
