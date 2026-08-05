@@ -20,7 +20,7 @@ function handleInput(event) {
       <input
         class="search-input"
         type="text"
-        placeholder="검색할 도시 이름 입력 (예: 강릉, 진주...)"
+        placeholder="도시 또는 지역 이름 입력 (예: 강릉, 경기...)"
         :value="searchQuery"
         @input="handleInput"
       />

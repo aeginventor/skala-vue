@@ -50,10 +50,16 @@ const favoriteCityIds = ref(loadFavoritesFromStorage())
 /** 정렬 기준 (이름순 / 기온순 / 날씨별) */
 const sortOrder = ref('name')
 
+/**
+ * 검색어는 도시 이름뿐 아니라 region(예: "경기도 수원시")에도 매칭한다.
+ * "경기"처럼 광역 단위로 검색하면 그 지역에 속한 도시가 한 번에 다 걸린다.
+ */
 const filteredWeatherList = computed(() => {
   const keyword = searchQuery.value.trim()
   if (!keyword) return weatherStore.cities
-  return weatherStore.cities.filter((city) => city.name.includes(keyword))
+  return weatherStore.cities.filter(
+    (city) => city.name.includes(keyword) || city.region.includes(keyword)
+  )
 })
 
 /**
