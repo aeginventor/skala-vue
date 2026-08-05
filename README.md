@@ -28,44 +28,44 @@ VITE_OPENWEATHER_API_KEY=발급받은_키
 | 요구사항 | 구현 | 위치 |
 |---|---|---|
 | 컴포넌트 분리 + props/emit | 부모가 데이터를 내리고 자식은 이벤트만 올린다 | `views/WeatherHomeView.vue`, `components/BaseDashboardCard.vue`, `SearchBar.vue`, `WeatherCard.vue` |
-| Vue Router | 목록 `/` ↔ 상세 `/weather/:cityId`, 소개 `/about`, 나머지 404 | `router/index.js` |
-| Pinia 전역 상태 | 즐겨찾기 / 도시 목록·로딩 / 표시 설정을 성격별로 분리 | `stores/favoriteStore.js`, `weatherStore.js`, `configStore.js` |
+| Vue Router | 목록 `/`, 상세 `/weather/:cityId`, 소개 `/about`, 나머지 404 | `router/index.js` |
+| Pinia 전역 상태 | 즐겨찾기, 도시 목록과 로딩, 표시 설정을 성격별로 분리 | `stores/favoriteStore.js`, `weatherStore.js`, `configStore.js` |
 | Axios 실데이터 | 위경도로 현재 날씨 + 3시간 간격 예보 조회 | `api/weatherApi.js` |
-| 로딩·에러 처리 | 스켈레톤 → 실패 시 배너 + 예시 데이터 폴백 | `stores/weatherStore.js` |
-| Vite 빌드·배포 | `base: '/skala-vue/'` + 해시 라우팅, main 푸시 시 자동 배포 | `vite.config.js`, `.github/workflows/deploy.yml` |
-| UI 라이브러리 | 미적용 (아래 참고) | — |
+| 로딩과 에러 처리 | 스켈레톤을 먼저 띄우고, 실패하면 배너와 함께 예시 데이터로 대체 | `stores/weatherStore.js` |
+| Vite 빌드와 배포 | `base: '/skala-vue/'` + 해시 라우팅, main 푸시 시 자동 배포 | `vite.config.js`, `.github/workflows/deploy.yml` |
+| UI 라이브러리 | 미적용 (아래 참고) | 해당 없음 |
 
 UI 라이브러리(Element Plus 등)는 쓰지 않았다. 두꺼운 잉크 테두리와 직접 그린 날씨 아이콘으로 디자인 시스템을 이미 갖고 있어서, 라이브러리를 넣으면 기본 스타일을 걷어내는 CSS가 더 늘어난다. 대신 반복되는 껍데기는 `BaseDashboardCard`로, 눌리는 감각은 `.ink-pressable` 한 클래스로 묶었다.
 
 ### 요구 사항 외 구현 기능
 
-- 지역 단위 검색 — "경기"로 검색하면 그 지역 도시가 한 번에 나온다
-- 즐겨찾기(localStorage 유지) · 이름/기온/날씨별 정렬
-- 상단 Dock — 30개 지역 바로가기, 마우스 드래그로 가로 스크롤
-- 전국 기온 판 — 6개씩 다섯 장을 자동으로 넘김(hover 시 정지)
+- 지역 단위 검색. "경기"로 검색하면 그 지역 도시가 한 번에 나온다
+- 즐겨찾기(localStorage 유지)와 이름순, 기온순, 날씨별 정렬
+- 상단 Dock에서 30개 지역 바로가기. 마우스로 끌어도 가로 스크롤이 된다
+- 전국 기온 판에서 6개씩 다섯 장을 자동으로 넘긴다(마우스를 올리면 멈춤)
 - 섭씨/화씨 전환, 기온 5단계 분류
-- 실시간 ↔ 예시 데이터 토글 — 눈·뇌우처럼 계절을 타는 날씨는 실제 API로 확인할 수 없어서, 구현해 둔 표현을 전부 담은 예시 데이터로 전환할 수 있게 했다
-- 날씨 아이콘·애니메이션을 아이콘 세트 없이 직접 그린 SVG로 구현
+- 실시간과 예시 데이터 전환. 눈이나 뇌우처럼 계절을 타는 날씨는 실제 API로 확인할 수 없어서, 구현해 둔 표현을 전부 담은 예시 데이터로 바꿔볼 수 있게 했다
+- 날씨 아이콘과 애니메이션을 아이콘 세트 없이 직접 그린 SVG로 구현
 
 ## 4일간 어려웠던 점과 해결 과정
 
-**1일차 — 조사(이/가)가 어색했다.** 문자열에 "이"를 박아 넣어 "대구이 선택되었습니다"가 됐다. 완성형 한글이 `0xAC00 + (초성×21 + 중성)×28 + 종성` 순으로 배열된다는 점을 이용해, `(코드 - 0xAC00) % 28`로 받침 유무를 계산하도록 바꿨다(`utils/josa.js`).
+**1일차. 조사(이/가)가 어색했다.** 문자열에 "이"를 박아 넣어 "대구이 선택되었습니다"가 됐다. 완성형 한글이 `0xAC00 + (초성×21 + 중성)×28 + 종성` 순으로 배열된다는 점을 이용해, `(코드 - 0xAC00) % 28`로 받침 유무를 계산하도록 바꿨다(`utils/josa.js`).
 
-**2일차 — App.vue 하나가 계속 커졌다.** 상태·표현·이벤트가 한 파일에 섞여서 `BaseDashboardCard`(껍데기) / `SearchBar`(입력) / `WeatherCard`(도시 하나)로 쪼갰다. "부모가 데이터를 내리고 자식은 이벤트만 올린다"는 방향을 정해두니 이후 기능이 붙어도 흐름이 헷갈리지 않았다.
+**2일차. App.vue 하나가 계속 커졌다.** 상태와 표현, 이벤트가 한 파일에 섞여서 `BaseDashboardCard`(껍데기) / `SearchBar`(입력) / `WeatherCard`(도시 하나)로 쪼갰다. "부모가 데이터를 내리고 자식은 이벤트만 올린다"는 방향을 정해두니 이후 기능이 붙어도 흐름이 헷갈리지 않았다.
 
-**3일차 — 라우터·상태에서 세 번 막혔다.**
-- 상세에서 다른 도시를 눌러도 화면이 그대로였다. 같은 라우트 레코드라 Vue Router가 컴포넌트를 재사용하는데 로딩을 `onMounted`에만 둔 게 원인이었다. `watch(route.params.cityId, …, { immediate: true })`로 바꿔 최초 진입과 도시 전환을 함께 처리했다.
+**3일차. 라우터와 상태에서 세 번 막혔다.**
+- 상세에서 다른 도시를 눌러도 화면이 그대로였다. 같은 라우트 레코드라 Vue Router가 컴포넌트를 재사용하는데 로딩을 `onMounted`에만 둔 게 원인이었다. `watch(route.params.cityId, ..., { immediate: true })`로 바꿔 최초 진입과 도시 전환을 함께 처리했다.
 - Dock 아이콘이 실제 날씨와 달랐다. Dock과 목록이 형제라 한쪽의 로컬 상태를 다른 쪽이 볼 수 없었다. 도시 목록을 Pinia로 올려 해결했다.
 - 배포 후 새로고침에서 404가 났다. GitHub Pages는 정적 호스팅이라 딥링크 경로를 모른다. 해시 라우팅으로 바꾸고 `base`를 저장소 이름에 맞췄다.
 
-**4일차 — 눈에 보이는 문제가 가장 오래 걸렸다.** Dock 양 끝 고정 버튼이 스크롤되는 카드를 각지게 잘라 먹는 문제를 세 번 되돌려가며 고쳤다. 흐림 폭을 넓히면 멈춰 있을 때 옆 카드를 가리고, 없애면 다시 각지게 잘려서, 결국 정지 상태의 여백과 같은 폭에서만 흐려지도록 맞췄다.
+**4일차. 눈에 보이는 문제가 가장 오래 걸렸다.** Dock 양 끝 고정 버튼이 스크롤되는 카드를 각지게 잘라 먹는 문제를 세 번 되돌려가며 고쳤다. 흐림 폭을 넓히면 멈춰 있을 때 옆 카드를 가리고, 없애면 다시 각지게 잘려서, 결국 정지 상태의 여백과 같은 폭에서만 흐려지도록 맞췄다.
 
 ## 셀프 코드리뷰
 
-- **단일 책임** — 유틸과 스토어는 역할이 뚜렷하지만 `WeatherHomeView`가 검색·정렬·선택을 함께 들고 있어 가장 무겁다. 즐겨찾기를 스토어로 뺀 것도 이 파일을 줄이려는 것이었고, 정렬까지 빼는 건 다음 과제로 남는다.
-- **반응형 남용** — 규칙 테이블·SVG 경로처럼 값이 변하지 않는 것은 평범한 `const`로 뒀고, `ref`/`computed`는 실제로 바뀌는 값에만 썼다. 반대로 로딩 상태는 여러 화면이 함께 봐야 해서 스토어의 반응형 상태로 올렸다.
-- **로딩·에러 처리** — 로딩 중에는 실제 카드와 같은 배치의 스켈레톤으로 자리를 먼저 잡아 화면이 튀지 않게 했고, 실패하면 배너로 알린 뒤 예시 데이터로 이어가 빈 화면을 보여주지 않는다.
-- **네이밍** — `getWeatherGlyph`, `getCloudCount`, `loadCities`처럼 동사+대상으로 맞췄고, 판정 기준이 헷갈릴 수 있는 곳은 `rawCelsius`처럼 단위를 이름에 넣었다.
+- **단일 책임.** 유틸과 스토어는 역할이 뚜렷하지만 `WeatherHomeView`가 검색과 정렬, 선택을 함께 들고 있어 가장 무겁다. 즐겨찾기를 스토어로 뺀 것도 이 파일을 줄이려는 것이었고, 정렬까지 빼는 건 다음 과제로 남는다.
+- **반응형 남용.** 규칙 테이블이나 SVG 경로처럼 값이 변하지 않는 것은 평범한 `const`로 뒀고, `ref`/`computed`는 실제로 바뀌는 값에만 썼다. 반대로 로딩 상태는 여러 화면이 함께 봐야 해서 스토어의 반응형 상태로 올렸다.
+- **로딩과 에러 처리.** 로딩 중에는 실제 카드와 같은 배치의 스켈레톤으로 자리를 먼저 잡아 화면이 튀지 않게 했고, 실패하면 배너로 알린 뒤 예시 데이터로 이어가 빈 화면을 보여주지 않는다.
+- **네이밍.** `getWeatherGlyph`, `getCloudCount`, `loadCities`처럼 동사+대상으로 맞췄고, 판정 기준이 헷갈릴 수 있는 곳은 `rawCelsius`처럼 단위를 이름에 넣었다.
 
 ## 프로젝트 구조
 
@@ -73,12 +73,12 @@ UI 라이브러리(Element Plus 등)는 쓰지 않았다. 두꺼운 잉크 테�
 src/
   api/         OpenWeatherMap 호출 + 응답 매핑
   data/        전국 30개 지역 예시 데이터 (폴백 겸 예시 모드용)
-  stores/      favoriteStore(즐겨찾기), weatherStore(도시 목록·로딩), configStore(표시 설정)
-  utils/       weatherIcon(날씨 -> 그림·색), tempLevel(기온 5단계),
+  stores/      favoriteStore(즐겨찾기), weatherStore(도시 목록과 로딩), configStore(표시 설정)
+  utils/       weatherIcon(날씨 -> 그림과 색), tempLevel(기온 5단계),
                glyphPaths(SVG 경로), josa(조사), formatTime
   components/  CityDock, WeatherCard, TempBoard, WeatherGlyph, SelectedCityPanel 등
   views/       WeatherHomeView, WeatherDetailView, WeatherAboutView, NotFoundView
   router/      라우트 정의
 ```
 
-날씨 문자열(`맑음`, `튼구름` 등)은 `utils/weatherIcon.js`의 규칙 테이블 하나에서 그림·색·정렬 기준을 모두 뽑는다. 따로 관리하면 서로 어긋나기 때문이다. 기온 5단계도 `utils/tempLevel.js`의 임계값 테이블 하나에서 뽑고, 판정은 표시 단위와 무관하게 항상 원본 섭씨로 한다.
+날씨 문자열(`맑음`, `튼구름` 등)은 `utils/weatherIcon.js`의 규칙 테이블 하나에서 그림과 색, 정렬 기준을 모두 뽑는다. 따로 관리하면 서로 어긋나기 때문이다. 기온 5단계도 `utils/tempLevel.js`의 임계값 테이블 하나에서 뽑고, 판정은 표시 단위와 무관하게 항상 원본 섭씨로 한다.
