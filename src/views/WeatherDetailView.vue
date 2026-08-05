@@ -245,15 +245,21 @@ const visibilityKm = computed(() => {
   color: var(--color-primary);
 }
 
+/* 홈 화면 배너와 같은 방식 — 옅은 면 대신 종이 + 왼쪽 색 띠 */
 .fetch-error {
   margin: 0 0 12px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-warning);
-  background: var(--color-warning-bg);
+  color: var(--color-ink);
+  background: var(--color-surface);
   border: var(--border-thin);
+  border-left: 7px solid var(--color-warning);
   border-radius: var(--radius-sm);
   padding: 10px 14px;
+}
+
+.fetch-error i {
+  color: var(--color-warning);
 }
 
 .hero {
@@ -399,7 +405,7 @@ const visibilityKm = computed(() => {
 
 .forecast-slot__icon {
   color: var(--color-primary);
-  font-size: 16px;
+  font-size: 26px;
 }
 
 .forecast-slot__temp {

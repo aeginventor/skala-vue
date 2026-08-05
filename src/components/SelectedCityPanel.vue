@@ -117,8 +117,8 @@ function handleDetailClick() {
 
 .selected-bar__icon-wrap {
   flex-shrink: 0;
-  width: 48px;
-  height: 48px;
+  width: 54px;
+  height: 54px;
   border-radius: 50%;
   /* 카드와 같은 규칙: 원을 날씨색으로 꽉 채우고 그 위 아이콘 색만 밝기에 맞춰 바꾼다 */
   background: var(--panel-accent, var(--color-sun));
@@ -129,7 +129,7 @@ function handleDetailClick() {
 }
 
 .selected-bar__icon {
-  font-size: 20px;
+  font-size: 32px;
   color: var(--panel-on-accent, var(--color-ink));
 }
 

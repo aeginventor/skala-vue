@@ -40,15 +40,15 @@ const category = computed(() => getWeatherCategory(status))
  */
 const driftingClouds = computed(() => {
   const sizes = {
-    1: [{ size: 46, top: 34, duration: 7.5 }],
+    1: [{ size: 64, top: 26, duration: 7.5 }],
     2: [
-      { size: 30, top: 18, duration: 10 },
-      { size: 40, top: 44, duration: 6.5 }
+      { size: 42, top: 12, duration: 10 },
+      { size: 56, top: 40, duration: 6.5 }
     ],
     3: [
-      { size: 24, top: 14, duration: 11.5 },
-      { size: 30, top: 34, duration: 8.5 },
-      { size: 36, top: 56, duration: 6 }
+      { size: 34, top: 8, duration: 11.5 },
+      { size: 42, top: 30, duration: 8.5 },
+      { size: 50, top: 54, duration: 6 }
     ]
   }
 
@@ -78,7 +78,7 @@ const snowflakes = Array.from({ length: 8 }, (_, i) => ({
     <!-- 맑음: 해가 천천히 커졌다 작아지며 쨍쨍 -->
     <template v-if="category === 'sun'">
       <div class="sun">
-        <span v-for="n in 8" :key="n" class="sun__ray" :style="{ transform: `rotate(${n * 45}deg) translateY(-24px)` }"></span>
+        <span v-for="n in 8" :key="n" class="sun__ray" :style="{ transform: `rotate(${n * 45}deg) translateY(-31px)` }"></span>
         <div class="sun__core"></div>
       </div>
     </template>
@@ -187,7 +187,7 @@ const snowflakes = Array.from({ length: 8 }, (_, i) => ({
 
 .sun__core {
   position: absolute;
-  inset: -18px;
+  inset: -24px;
   background: var(--color-sun);
   border: 3px solid var(--color-ink);
   border-radius: 50%;
@@ -199,8 +199,8 @@ const snowflakes = Array.from({ length: 8 }, (_, i) => ({
   top: 50%;
   left: 50%;
   width: 3px;
-  height: 11px;
-  margin: -5.5px 0 0 -1.5px;
+  height: 14px;
+  margin: -7px 0 0 -2px;
   background: var(--color-ink);
   border-radius: 2px;
   transform-origin: center;
@@ -274,8 +274,8 @@ const snowflakes = Array.from({ length: 8 }, (_, i) => ({
 .raindrop {
   position: absolute;
   top: 38px;
-  width: 2px;
-  height: 12px;
+  width: 3px;
+  height: 16px;
   background: var(--color-rain);
   border-radius: 2px;
   transform: rotate(-12deg);
@@ -304,8 +304,8 @@ const snowflakes = Array.from({ length: 8 }, (_, i) => ({
 .snowflake {
   position: absolute;
   top: 34px;
-  width: 7px;
-  height: 7px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   background: var(--color-snow);
   animation-name: snow-fall, snow-sway;
@@ -337,8 +337,8 @@ const snowflakes = Array.from({ length: 8 }, (_, i) => ({
   top: 48px;
   left: 50%;
   transform: translateX(-50%);
-  width: 17px;
-  height: 24px;
+  width: 23px;
+  height: 32px;
   fill: oklch(84% 0.16 95);
   stroke: var(--color-ink);
   stroke-width: 2;

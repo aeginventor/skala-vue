@@ -87,7 +87,7 @@ const tempLevel = computed(() => getTempLevel(city.temp))
     <p class="tile__region">{{ city.region }}</p>
     <p class="tile__temp">{{ displayTemp }}<span class="tile__unit">{{ configStore.unitSymbol }}</span></p>
 
-    <span class="badge" :style="{ '--badge-color': tempLevel.color, '--badge-bg': tempLevel.bg }">
+    <span class="badge" :style="{ '--badge-bg': tempLevel.color, '--badge-fg': tempLevel.on }">
       <i :class="['fa-solid', tempLevel.icon]"></i> {{ tempLevel.label }}
     </span>
 
@@ -192,8 +192,8 @@ const tempLevel = computed(() => getTempLevel(city.temp))
 
 /* 카드에서 유일하게 색이 들어오는 자리. 날씨색을 옅게가 아니라 꽉 채운다. */
 .tile__icon-wrap {
-  width: 64px;
-  height: 64px;
+  width: 74px;
+  height: 74px;
   border-radius: 50%;
   background: var(--tile-accent, var(--color-sun));
   border: var(--border-thin);
@@ -204,7 +204,7 @@ const tempLevel = computed(() => getTempLevel(city.temp))
 }
 
 .tile__icon {
-  font-size: 30px;
+  font-size: 44px;
   color: var(--tile-on-accent, var(--color-ink));
 }
 
@@ -236,19 +236,23 @@ const tempLevel = computed(() => getTempLevel(city.temp))
   margin-left: 2px;
 }
 
-/* 색은 기온 단계(tempLevel)가 정해서 인라인 변수(--badge-*)로 내려온다 */
+/*
+ * 색은 기온 단계(tempLevel)가 정해서 인라인 변수(--badge-*)로 내려온다.
+ * 소개 페이지 범례와 같은 진한 색을 쓴다 — 예전엔 여기만 옅은 버전이라 같은 정보가
+ * 두 화면에서 다르게 보였다.
+ */
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   padding: 4px 10px;
   border-radius: 999px;
   border: var(--border-thin);
   margin-bottom: 12px;
   background: var(--badge-bg);
-  color: var(--badge-color);
+  color: var(--badge-fg);
 }
 
 .tile__footer {

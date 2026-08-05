@@ -249,7 +249,7 @@ onBeforeUnmount(() => {
   color: var(--color-ink);
   text-decoration: none;
   font-family: inherit;
-  font-size: 17px;
+  font-size: 26px;
   padding: 0;
   transition: transform 0.15s ease, background-color 0.15s ease;
 }
