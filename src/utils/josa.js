@@ -13,7 +13,7 @@
 function hasFinalConsonant(word) {
   if (!word) return false
 
-  const lastChar = word[word.length - 1]
+  const lastChar = word.at(-1)
   const code = lastChar.charCodeAt(0)
 
   // 완성형 한글(가~힣) 범위를 벗어나면(영어/숫자/자모 단독 등)

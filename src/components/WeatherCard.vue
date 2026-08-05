@@ -10,7 +10,12 @@ import { getWeatherIcon, getWeatherTheme } from '../utils/weatherIcon.js'
  * - 날씨 상태에 따라 카드 배경색 자체가 바뀐다(getWeatherTheme) — 맑음=노랑,
  *   비=파랑, 흐림=회청 등. 텍스트를 읽지 않아도 색만으로 대략적인 날씨가 느껴지게.
  */
-const props = defineProps({
+/**
+ * city 는 스크립트에서 반복해서 쓰이므로 꺼내서 받는다. Vue 3.5부터 props 구조분해가
+ * 정식 지원되어, 이렇게 꺼내 써도 반응형이 유지된다(컴파일러가 props.city 로 되돌린다).
+ * isSelected/isFavorite 은 템플릿에서만 쓰므로 굳이 꺼내지 않는다.
+ */
+const { city } = defineProps({
   city: {
     type: Object,
     required: true
@@ -29,12 +34,12 @@ const emit = defineEmits(['select-card', 'click-detail', 'toggle-favorite'])
 
 const configStore = useConfigStore()
 
-const theme = computed(() => getWeatherTheme(props.city.status))
-const icon = computed(() => getWeatherIcon(props.city.status))
+const theme = computed(() => getWeatherTheme(city.status))
+const icon = computed(() => getWeatherIcon(city.status))
 
 /** city.temp 원본은 항상 섭씨. 화면 표시 시점에만 configStore.unit 에 따라 변환. */
 const displayTemp = computed(() => {
-  const rawTemp = props.city.temp
+  const rawTemp = city.temp
   if (configStore.unit === 'fahrenheit') {
     return Math.round((rawTemp * 9) / 5 + 32)
   }
@@ -42,15 +47,15 @@ const displayTemp = computed(() => {
 })
 
 function handleCardClick() {
-  emit('select-card', props.city)
+  emit('select-card', city)
 }
 
 function handleDetailClick() {
-  emit('click-detail', props.city)
+  emit('click-detail', city)
 }
 
 function handleFavoriteClick() {
-  emit('toggle-favorite', props.city)
+  emit('toggle-favorite', city)
 }
 
 /** 25도(섭씨) 기준. 단위가 화씨로 바뀌어도 판단은 항상 원본 섭씨 값으로 고정한다. */

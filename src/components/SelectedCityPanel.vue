@@ -13,7 +13,8 @@ import { getWeatherIcon, getWeatherTheme } from '../utils/weatherIcon.js'
  * 페이지 맨 아래 normal flow에 두면 스크롤을 끝까지 내려야 보인다. 가로로 넓은
  * 바 형태로 뷰포트 바닥에 고정하면 화면을 덜 가리면서도 스크롤 없이 항상 보인다.
  */
-const props = defineProps({
+// Vue 3.5부터 props 구조분해가 정식 지원되어, 꺼내 써도 반응형이 유지된다.
+const { city } = defineProps({
   city: {
     type: Object,
     default: null
@@ -24,12 +25,13 @@ const emit = defineEmits(['click-detail'])
 
 const configStore = useConfigStore()
 
-const theme = computed(() => (props.city ? getWeatherTheme(props.city.status) : null))
-const icon = computed(() => (props.city ? getWeatherIcon(props.city.status) : ''))
+// 선택된 도시가 없을 때(city === null) 그려질 일이 없는 값들이라 옵셔널 체이닝으로 넘긴다
+const theme = computed(() => (city ? getWeatherTheme(city.status) : null))
+const icon = computed(() => (city ? getWeatherIcon(city.status) : ''))
 
 const displayTemp = computed(() => {
-  if (!props.city) return null
-  const rawTemp = props.city.temp
+  const rawTemp = city?.temp
+  if (rawTemp === undefined) return null
   if (configStore.unit === 'fahrenheit') {
     return Math.round((rawTemp * 9) / 5 + 32)
   }
@@ -37,7 +39,7 @@ const displayTemp = computed(() => {
 })
 
 function handleDetailClick() {
-  if (props.city) emit('click-detail', props.city)
+  if (city) emit('click-detail', city)
 }
 </script>
 

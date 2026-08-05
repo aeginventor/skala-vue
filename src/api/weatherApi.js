@@ -53,21 +53,25 @@ export async function fetchForecast(lat, lon) {
  *   상세 화면(WeatherDetailView)이 같은 변환 함수를 재사용할 수 있게 하기 위해서다.
  */
 export function mapWeatherResponse(apiData, baseCity) {
+  // 응답이 main/wind/sys 처럼 몇 개의 덩어리로 나뉘어 오므로, 필요한 덩어리만 한 번에
+  // 꺼내 쓴다. apiData.* 를 매 줄 반복하는 것보다 어떤 그룹의 값인지가 잘 드러난다.
+  const { main, wind, weather, clouds, sys, visibility, timezone } = apiData
+
   return {
     ...baseCity,
-    temp: Math.round(apiData.main.temp),
-    feelsLike: Math.round(apiData.main.feels_like),
-    status: apiData.weather?.[0]?.description ?? baseCity.status,
-    humidity: apiData.main.humidity,
-    pressure: apiData.main.pressure,
-    windSpeed: apiData.wind.speed,
-    windDeg: apiData.wind.deg,
-    windGust: apiData.wind.gust ?? null,
-    cloudsPercent: apiData.clouds?.all ?? null,
-    visibilityMeters: apiData.visibility ?? null,
-    sunrise: apiData.sys?.sunrise ?? null,
-    sunset: apiData.sys?.sunset ?? null,
-    timezoneOffsetSec: apiData.timezone ?? 0
+    temp: Math.round(main.temp),
+    feelsLike: Math.round(main.feels_like),
+    status: weather?.[0]?.description ?? baseCity.status,
+    humidity: main.humidity,
+    pressure: main.pressure,
+    windSpeed: wind.speed,
+    windDeg: wind.deg,
+    windGust: wind.gust ?? null,
+    cloudsPercent: clouds?.all ?? null,
+    visibilityMeters: visibility ?? null,
+    sunrise: sys?.sunrise ?? null,
+    sunset: sys?.sunset ?? null,
+    timezoneOffsetSec: timezone ?? 0
   }
 }
 
@@ -77,10 +81,12 @@ export function mapWeatherResponse(apiData, baseCity) {
  */
 export function mapForecastResponse(forecastData) {
   const slots = forecastData?.list ?? []
-  return slots.slice(0, 4).map((slot) => ({
+  // 슬롯에서 쓰는 필드는 셋뿐이라 콜백 파라미터에서 바로 꺼낸다.
+  // dt_txt 는 snake_case라 꺼내면서 dateText 로 이름을 바꿔 받는다.
+  return slots.slice(0, 4).map(({ dt_txt: dateText, main, weather }) => ({
     // "2026-08-05 15:00:00" -> "15:00" 만 잘라서 쓴다
-    time: slot.dt_txt?.slice(11, 16) ?? '',
-    temp: Math.round(slot.main.temp),
-    status: slot.weather?.[0]?.description ?? ''
+    time: dateText?.slice(11, 16) ?? '',
+    temp: Math.round(main.temp),
+    status: weather?.[0]?.description ?? ''
   }))
 }

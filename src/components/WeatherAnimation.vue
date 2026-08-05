@@ -17,14 +17,15 @@ import { getWeatherCategory } from '../utils/weatherIcon.js'
  * - 빗방울/눈송이는 각자 다른 위치(left%)·지연시간(delay)·속도(duration)를 가져야
  *   "우수수 떨어지는" 느낌이 나서, 렌더링 전에 미리 배열로 계산해 둔다.
  */
-const props = defineProps({
+// Vue 3.5부터 props 구조분해가 정식 지원되어, 꺼내 써도 반응형이 유지된다.
+const { status } = defineProps({
   status: {
     type: String,
     required: true
   }
 })
 
-const category = computed(() => getWeatherCategory(props.status))
+const category = computed(() => getWeatherCategory(status))
 
 const raindrops = Array.from({ length: 10 }, (_, i) => ({
   left: (i * 10.3) % 100,

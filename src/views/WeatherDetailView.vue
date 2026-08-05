@@ -48,10 +48,12 @@ async function loadCityDetail(cityId) {
 
   cityDetail.value = baseCity // 우선 (이전에 캐시된 값이 있다면 그 값으로) 화면을 채워 빈 화면 방지
 
+  const { lat, lon } = baseCity
+
   try {
     const [currentWeatherData, forecastData] = await Promise.all([
-      fetchCurrentWeather(baseCity.lat, baseCity.lon),
-      fetchForecast(baseCity.lat, baseCity.lon)
+      fetchCurrentWeather(lat, lon),
+      fetchForecast(lat, lon)
     ])
     const mergedCity = mapWeatherResponse(currentWeatherData, baseCity)
     cityDetail.value = mergedCity

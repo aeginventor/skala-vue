@@ -65,9 +65,9 @@ function handleDragStart(event) {
   window.addEventListener('mouseup', handleDragEnd)
 }
 
-function handleDragMove(event) {
+function handleDragMove({ pageX }) {
   if (!isPointerDown || !dockEl.value) return
-  const delta = event.pageX - dragStartX
+  const delta = pageX - dragStartX
   if (Math.abs(delta) > 4) {
     dragMoved = true
     isDragging.value = true

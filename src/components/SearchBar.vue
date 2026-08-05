@@ -8,8 +8,8 @@ defineProps({
 
 const emit = defineEmits(['update-query'])
 
-function handleInput(event) {
-  emit('update-query', event.target.value)
+function handleInput({ target }) {
+  emit('update-query', target.value)
 }
 </script>
 
