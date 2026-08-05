@@ -46,15 +46,15 @@ body {
   --color-storm: var(--ink-plum);
 
   /*
-   * 기온 5단계. 새 색을 다섯 개 고르는 대신 **같은 잉크를 차가운 쪽부터 늘어놓았다.**
-   * 파랑 잉크(짙게 -> 옅게) → 탁한 녹 → 황토 → 주홍 순이라, 색상환을 균등하게 돌린
-   * 순차 스케일보다 "골라 쓴" 느낌이 난다.
+   * 기온 5단계. 여기만 잉크에서 섞지 않고 고정 색을 쓴다 — 다섯 칸이 나란히 붙어
+   * 있어서 서로 확실히 구분되는 게 우선이라, 파랑에서 빨강까지 한 벌로 고른 값을 넣었다.
+   * 추움 -> 더움 순서. 이 위에 얹는 글자색은 tempLevel.js가 함께 정한다.
    */
-  --color-temp-cold: color-mix(in oklab, var(--ink-slate) 88%, var(--color-ink));
-  --color-temp-chilly: color-mix(in oklab, var(--ink-slate) 62%, var(--color-bg));
-  --color-temp-mild: var(--ink-sage);
-  --color-temp-warm: var(--ink-ochre);
-  --color-temp-hot: var(--ink-vermillion);
+  --color-temp-cold: #1982c4;
+  --color-temp-chilly: #2b9eb3;
+  --color-temp-mild: #44af69;
+  --color-temp-warm: #fcab10;
+  --color-temp-hot: #f8333c;
 
   --color-warning: color-mix(in oklab, var(--ink-ochre) 72%, var(--color-ink));
   --color-favorite: var(--ink-ochre);

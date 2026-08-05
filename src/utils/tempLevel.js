@@ -4,14 +4,16 @@
  *
  * weatherIcon.js와 같은 방식으로 임계값 표 하나에서 라벨·색·아이콘을 전부 뽑는다.
  * 높은 온도부터 적어서, 처음 만족하는 칸이 곧 그 단계다.
+ *
+ * `on`은 그 색 위에 얹는 글자색이다. 다섯 색 모두 종이색보다 잉크색을 얹었을 때
+ * 대비가 높게 나와서 전부 잉크로 뒀다.
  */
 const INK = 'var(--color-ink)'
-const PAPER = 'var(--color-bg)'
 
 const TEMP_LEVELS = [
   {
     id: 'hot',
-    on: PAPER,
+    on: INK,
     label: '더움',
     min: 28,
     icon: 'fa-fire',
@@ -43,7 +45,7 @@ const TEMP_LEVELS = [
   },
   {
     id: 'cold',
-    on: PAPER,
+    on: INK,
     label: '추움',
     min: -Infinity,
     icon: 'fa-snowflake',
