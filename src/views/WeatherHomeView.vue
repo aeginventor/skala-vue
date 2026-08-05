@@ -1,6 +1,13 @@
 <script setup>
 import { ref, computed, watch, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElSelect, ElOption } from 'element-plus'
+import 'element-plus/theme-chalk/base.css'
+import 'element-plus/theme-chalk/el-select.css'
+import 'element-plus/theme-chalk/el-option.css'
+import 'element-plus/theme-chalk/el-select-dropdown.css'
+import 'element-plus/theme-chalk/el-popper.css'
+import 'element-plus/theme-chalk/el-scrollbar.css'
 import BaseDashboardCard from '../components/BaseDashboardCard.vue'
 import SearchBar from '../components/SearchBar.vue'
 import TempBoard from '../components/TempBoard.vue'
@@ -25,7 +32,17 @@ const favoriteStore = useFavoriteStore()
 const searchQuery = ref('')
 const selectedCityInfo = ref(null)
 
-/** 정렬 기준 (이름순 / 기온순 / 날씨별) */
+/**
+ * 정렬 기준. 선택지를 배열로 두면 select 옵션과 로그 문구가 한 곳에서 나온다.
+ * 이 select만 Element Plus(el-select)를 쓴다 — 화면 전체는 손그림 톤이라 라이브러리
+ * 기본 스타일과 섞이지 않게 CSS 변수로 테두리·배경만 맞춰 끼웠다.
+ */
+const SORT_OPTIONS = [
+  { value: 'name', label: '이름순' },
+  { value: 'temp', label: '기온순' },
+  { value: 'weather', label: '날씨별' }
+]
+
 const sortOrder = ref('name')
 
 /**
@@ -115,11 +132,7 @@ const tagline = computed(() => {
   return `오늘은 ${hot}${getSubjectParticle(hot)} 가장 덥고, ${cold}${getSubjectParticle(cold)} 가장 선선해요.`
 })
 
-/**
- * 이 문구는 더 이상 화면에 그대로 노출되지 않는다 — 선택한 도시는 이제
- * SelectedCityPanel이 아이콘·기온까지 함께 보여준다. 다만 "선택이 바뀔 때마다
- * 반응"하는 로직 자체는 여전히 유효해서, 아래 watch의 콘솔 로그용으로 남겨뒀다.
- */
+/** 선택 변화를 추적하는 로그용 문구. 화면에 보이는 안내는 SelectedCityPanel이 맡는다. */
 const statusMessage = computed(() => {
   if (!selectedCityInfo.value) return '카드를 클릭하거나 검색해 보세요.'
   const { name } = selectedCityInfo.value
@@ -136,8 +149,8 @@ watchEffect(() => {
 
 /** 정렬 기준이 바뀔 때 콘솔 로그 */
 watch(sortOrder, (newOrder) => {
-  const labelMap = { temp: '기온순', weather: '날씨별', name: '이름순' }
-  console.log(`[watch 감지] 정렬 기준이 '${labelMap[newOrder]}'으로 바뀌었습니다.`)
+  const label = SORT_OPTIONS.find((option) => option.value === newOrder)?.label ?? newOrder
+  console.log(`[watch 감지] 정렬 기준이 '${label}'으로 바뀌었습니다.`)
 })
 
 // 불러오기는 App.vue가 스토어를 통해 맡는다(Dock도 같은 데이터를 쓰고, 토글이 헤더에 있어서다).
@@ -202,12 +215,23 @@ function handleClickDetail(city) {
           </span>
         </div>
         <div class="toolbar__sort">
-          <label for="sort-order">정렬</label>
-          <select id="sort-order" v-model="sortOrder">
-            <option value="name">이름순</option>
-            <option value="temp">기온순</option>
-            <option value="weather">날씨별</option>
-          </select>
+          <label id="sort-order-label" for="sort-order">정렬</label>
+          <!-- teleported=false: 드롭다운을 body가 아니라 이 자리에 그려야 화면 톤을 맞춘 스타일이 먹는다 -->
+          <ElSelect
+            id="sort-order"
+            v-model="sortOrder"
+            class="sort-select"
+            size="small"
+            aria-labelledby="sort-order-label"
+            :teleported="false"
+          >
+            <ElOption
+              v-for="option in SORT_OPTIONS"
+              :key="option.value"
+              :label="option.label"
+              :value="option.value"
+            />
+          </ElSelect>
         </div>
       </div>
 
@@ -373,14 +397,57 @@ function handleClickDetail(city) {
   color: var(--color-muted);
 }
 
-.toolbar__sort select {
+/*
+ * el-select를 나머지 화면과 같은 잉크 톤으로 맞춘다. 컴포넌트 내부 요소라 :deep()이 필요하고,
+ * 파란 포커스 링과 둥근 모서리처럼 기본 테마 티가 나는 부분만 덮어쓴다.
+ */
+.sort-select {
+  width: 104px;
+}
+
+.sort-select :deep(.el-select__wrapper) {
+  min-height: 30px;
+  padding: 2px 10px;
   border: var(--border-thin);
   border-radius: var(--radius-sm);
-  padding: 5px 10px;
+  background: var(--color-surface);
+  box-shadow: none;
+  font-family: inherit;
+}
+
+.sort-select :deep(.el-select__wrapper.is-focused) {
+  box-shadow: var(--shadow-hard-press);
+}
+
+.sort-select :deep(.el-select__selected-item) {
   font-size: 12px;
   font-weight: 600;
   color: var(--color-ink);
+}
+
+.sort-select :deep(.el-select__caret) {
+  color: var(--color-ink);
+}
+
+.sort-select :deep(.el-select-dropdown) {
+  border: var(--border-thin);
+  border-radius: var(--radius-sm);
   background: var(--color-surface);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.sort-select :deep(.el-select-dropdown__item) {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.sort-select :deep(.el-select-dropdown__item.is-selected) {
+  color: var(--color-primary);
+}
+
+.sort-select :deep(.el-select-dropdown__item.is-hovering) {
+  background: var(--color-primary-bg);
 }
 
 .empty-message {
