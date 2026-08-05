@@ -118,7 +118,7 @@ const visibilityKm = computed(() => {
     -->
     <div v-show="isLoading" class="detail-card" aria-busy="true" aria-label="날씨 정보를 불러오는 중입니다">
       <div class="skeleton skeleton--text detail-skeleton__title"></div>
-      <div class="hero">
+      <div class="hero hand-rule-bottom">
         <div class="skeleton skeleton--circle detail-skeleton__hero-icon"></div>
         <div class="detail-skeleton__hero-text">
           <div class="skeleton skeleton--text detail-skeleton__line" style="width: 45%"></div>
@@ -145,7 +145,7 @@ const visibilityKm = computed(() => {
         넓혀서 그 안에 바로 그린다. 배너로 분리하면 바로 아래 원형 아이콘과 같은
         정보를 두 번 보여주면서 시각적으로도 겹쳐 보인다.
       -->
-      <div class="hero">
+      <div class="hero hand-rule-bottom">
         <div class="hero__icon">
           <WeatherAnimation :status="cityDetail.status" />
         </div>
@@ -257,11 +257,11 @@ const visibilityKm = computed(() => {
 }
 
 .hero {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 18px;
   padding: 6px 4px 20px;
-  border-bottom: 3px dashed rgba(34, 34, 59, 0.2);
   margin-bottom: 18px;
 }
 

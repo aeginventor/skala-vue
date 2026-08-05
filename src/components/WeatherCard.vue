@@ -91,7 +91,7 @@ const tempLevel = computed(() => getTempLevel(city.temp))
       <i :class="['fa-solid', tempLevel.icon]"></i> {{ tempLevel.label }}
     </span>
 
-    <div class="tile__footer">
+    <div class="tile__footer hand-rule-top">
       <span class="tile__stat"><i class="fa-solid fa-droplet"></i> {{ city.humidity }}%</span>
       <span class="tile__stat"><i class="fa-solid fa-wind"></i> {{ city.windSpeed }}m/s</span>
     </div>
@@ -252,12 +252,12 @@ const tempLevel = computed(() => getTempLevel(city.temp))
 }
 
 .tile__footer {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 14px;
-  padding-top: 10px;
+  padding-top: 12px;
   padding-bottom: 12px;
-  border-top: 2px dashed rgba(34, 34, 59, 0.2);
 }
 
 .tile__stat {

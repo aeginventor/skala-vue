@@ -141,13 +141,30 @@ p:last-child {
 }
 
 .features > li {
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--color-border);
+  position: relative;
+  padding-bottom: 18px;
+}
+
+/*
+ * 항목 사이 구분선도 손그림 물결로 맞춘다. 항목마다 클래스를 붙이는 대신 여기서 한 번에
+ * 거는 이유는 마지막 항목만 빼야 하기 때문이다. 물결 모양(--rule-wavy)은 main.css의
+ * 것을 그대로 쓰므로 그림이 두 벌로 갈라지지 않는다.
+ */
+.features > li:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px;
+  background-color: var(--color-ink);
+  opacity: 0.3;
+  -webkit-mask: var(--rule-wavy) repeat-x left center / 60px 6px;
+  mask: var(--rule-wavy) repeat-x left center / 60px 6px;
 }
 
 .features > li:last-child {
   padding-bottom: 0;
-  border-bottom: none;
 }
 
 .features strong {

@@ -233,7 +233,7 @@ function toggleFavorite(city) {
     </p>
 
     <BaseDashboardCard title="지역별 날씨 현황" icon="fa-solid fa-location-dot">
-      <div class="toolbar">
+      <div class="toolbar hand-rule-bottom">
         <div class="toolbar__stats">
           <span><i class="fa-solid fa-list-ul"></i> 검색결과 {{ filteredCount }}개</span>
           <span><i class="fa-solid fa-star"></i> 즐겨찾기 {{ favoriteCount }}개</span>
@@ -381,14 +381,14 @@ function toggleFavorite(city) {
 }
 
 .toolbar {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 14px;
 }
 
 .toolbar__stats {
