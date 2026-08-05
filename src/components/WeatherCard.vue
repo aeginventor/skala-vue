@@ -115,7 +115,6 @@ function isHot(rawCelsiusTemp) {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-hard);
   padding: 18px 16px 16px;
-  cursor: pointer;
   transition: transform 0.15s ease;
 }
 
@@ -143,7 +142,6 @@ function isHot(rawCelsiusTemp) {
   border: var(--border-thin);
   background: #fff;
   color: var(--color-muted);
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -250,6 +248,5 @@ function isHot(rawCelsiusTemp) {
   padding: 12px 14px;
   font-size: 13px;
   font-weight: 700;
-  cursor: pointer;
 }
 </style>

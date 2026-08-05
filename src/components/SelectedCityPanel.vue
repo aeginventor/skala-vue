@@ -180,7 +180,6 @@ function handleDetailClick() {
   padding: 12px 16px;
   font-size: 13px;
   font-weight: 700;
-  cursor: pointer;
 }
 
 .selected-bar__placeholder {

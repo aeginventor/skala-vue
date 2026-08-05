@@ -40,6 +40,5 @@ const unitLabel = () => (configStore.unit === 'celsius' ? '섭씨' : '화씨')
   color: #fff;
   box-shadow: var(--shadow-hard-sm);
   font-size: 14px;
-  cursor: pointer;
 }
 </style>
