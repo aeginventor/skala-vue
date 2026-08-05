@@ -9,40 +9,21 @@ import SelectedCityPanel from '../components/SelectedCityPanel.vue'
 import { getSubjectParticle } from '../utils/josa.js'
 import { useConfigStore } from '../stores/configStore.js'
 import { useWeatherStore } from '../stores/weatherStore.js'
+import { useFavoriteStore } from '../stores/favoriteStore.js'
 import { getWeatherCategory, WEATHER_CATEGORY_ORDER } from '../utils/weatherIcon.js'
 
 /**
- * WeatherHomeView — 검색/정렬/즐겨찾기와 지역별 날씨 카드 목록을 보여주는 대시보드.
- * 즐겨찾기·정렬·통계 computed·localStorage 저장 로직이 이 뷰의 핵심이다.
- * 도시 목록 자체는 weatherStore(Pinia)가 소유한다. Dock/Detail이 같은 데이터를
- * 보게 하기 위해서다 (자세한 이유는 stores/weatherStore.js 주석 참고).
+ * WeatherHomeView — 검색·정렬과 지역별 날씨 카드 목록을 보여주는 대시보드.
+ * 도시 목록은 weatherStore가, 즐겨찾기는 favoriteStore가 갖는다. 이 화면은 그걸
+ * 걸러서 정렬해 보여주는 일만 한다.
  */
 const router = useRouter()
 const configStore = useConfigStore()
 const weatherStore = useWeatherStore()
+const favoriteStore = useFavoriteStore()
 
 const searchQuery = ref('')
 const selectedCityInfo = ref(null)
-
-/**
- * 즐겨찾기 도시 id 목록.
- * id 배열로만 관리하는 이유: 도시 객체 전체를 통째로 저장하면 온도 같은 값이 갱신될 때
- * 즐겨찾기 목록에 있는 "옛날 온도"와 실제 카드의 "최신 온도"가 따로 놀 위험이 있다.
- * id만 들고 있으면 항상 weatherList 의 최신 데이터를 참조하게 되어 그런 불일치가 없다.
- */
-const FAVORITES_STORAGE_KEY = 'skala-weather-favorites'
-
-function loadFavoritesFromStorage() {
-  try {
-    const raw = localStorage.getItem(FAVORITES_STORAGE_KEY)
-    return raw ? JSON.parse(raw) : []
-  } catch (error) {
-    console.error('[localStorage 읽기 실패] 즐겨찾기 목록을 불러오지 못했습니다:', error)
-    return []
-  }
-}
-
-const favoriteCityIds = ref(loadFavoritesFromStorage())
 
 /** 정렬 기준 (이름순 / 기온순 / 날씨별) */
 const sortOrder = ref('name')
@@ -86,7 +67,7 @@ const sortedWeatherList = computed(() => {
   const favorites = []
   const others = []
   for (const city of filteredWeatherList.value) {
-    if (favoriteCityIds.value.includes(city.id)) {
+    if (favoriteStore.isFavorite(city.id)) {
       favorites.push(city)
     } else {
       others.push(city)
@@ -98,8 +79,6 @@ const sortedWeatherList = computed(() => {
 })
 
 /** 즐겨찾기 개수 */
-const favoriteCount = computed(() => favoriteCityIds.value.length)
-
 /** 검색어로 필터링된 결과 개수. 전체 개수 대비 몇 개가 걸렸는지 바로 보여준다. */
 const filteredCount = computed(() => filteredWeatherList.value.length)
 
@@ -162,19 +141,6 @@ watch(sortOrder, (newOrder) => {
   console.log(`[watch 감지] 정렬 기준이 '${labelMap[newOrder]}'으로 바뀌었습니다.`)
 })
 
-/**
- * 즐겨찾기 목록이 바뀔 때마다 localStorage에 저장한다.
- * watchEffect 대신 watch를 고른 이유: "즐겨찾기 배열 자체"만 감시 대상으로 못 박고 싶어서다.
- */
-watch(
-  favoriteCityIds,
-  (newFavorites) => {
-    localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(newFavorites))
-    console.log('[watch 감지] 즐겨찾기 목록이 localStorage에 저장되었습니다:', newFavorites)
-  },
-  { deep: true }
-)
-
 // 불러오기는 App.vue가 스토어를 통해 맡는다(Dock도 같은 데이터를 쓰고, 토글이 헤더에 있어서다).
 // 이 화면은 그 결과만 받아 쓴다.
 const isLoading = computed(() => weatherStore.isLoading)
@@ -197,14 +163,6 @@ function handleClickDetail(city) {
   router.push(`/weather/${city.id}`)
 }
 
-/** 즐겨찾기 토글. id 배열만 갈아끼운다 (불변 업데이트) */
-function toggleFavorite(city) {
-  if (favoriteCityIds.value.includes(city.id)) {
-    favoriteCityIds.value = favoriteCityIds.value.filter((id) => id !== city.id)
-  } else {
-    favoriteCityIds.value = [...favoriteCityIds.value, city.id]
-  }
-}
 </script>
 
 <template>
@@ -239,7 +197,7 @@ function toggleFavorite(city) {
       <div class="toolbar hand-rule-bottom">
         <div class="toolbar__stats">
           <span><i class="fa-solid fa-list-ul"></i> 검색결과 {{ filteredCount }}개</span>
-          <span><i class="fa-solid fa-star"></i> 즐겨찾기 {{ favoriteCount }}개</span>
+          <span><i class="fa-solid fa-star"></i> 즐겨찾기 {{ favoriteStore.count }}개</span>
           <span>
             <i class="fa-solid fa-temperature-half"></i>
             평균 {{ averageDisplayTemp }}{{ configStore.unitSymbol }}
@@ -281,10 +239,10 @@ function toggleFavorite(city) {
             :key="city.id"
             :city="city"
             :is-selected="selectedCityInfo?.id === city.id"
-            :is-favorite="favoriteCityIds.includes(city.id)"
+            :is-favorite="favoriteStore.isFavorite(city.id)"
             @select-card="handleSelectCard"
             @click-detail="handleClickDetail"
-            @toggle-favorite="toggleFavorite"
+            @toggle-favorite="favoriteStore.toggle($event.id)"
           />
         </ul>
       </template>
