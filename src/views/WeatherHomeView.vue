@@ -41,16 +41,9 @@ const filteredWeatherList = computed(() => {
 })
 
 /**
- * 검색 필터링 결과를 정렬 기준에 맞게 다시 정렬한다.
- * - filteredWeatherList 를 그대로 바꾸지 않고 얕은 복사([...list])한 뒤 정렬한다.
- *   Array.prototype.sort() 는 원본 배열을 직접 변경(mutate)하는 함수라서,
- *   복사 없이 그냥 정렬하면 filteredWeatherList(원본 참조)까지 같이 뒤바뀌어 버린다.
- * - 즐겨찾기 도시는 정렬 기준과 무관하게 항상 맨 앞에 온다. 이름/기온/날씨 정렬
- *   기준은 "즐겨찾기 그룹"과 "나머지 그룹" 각각의 내부 순서에만 적용된다.
- * - '날씨별' 정렬은 status 문자열을 그대로 비교하지 않고 getWeatherCategory()로
- *   뽑은 대분류(맑음/구름/비/눈/뇌우) 기준으로 묶는다. "튼구름"과 "약간 흐림"처럼
- *   문자열은 달라도 같은 구름 계열이면 한데 묶이고, 같은 카테고리 안에서는
- *   이름순으로 2차 정렬해서 순서가 매번 들쭉날쭉하지 않게 한다.
+ * 정렬 기준 비교 함수.
+ * '날씨별'은 status 문자열이 아니라 대분류로 묶는다 — "튼구름"과 "약간 흐림"은 문자열이
+ * 달라도 같은 구름이다. 같은 묶음 안에서는 이름순으로 2차 정렬해 순서를 고정한다.
  */
 function compareBySortOrder(a, b) {
   if (sortOrder.value === 'temp') return b.temp - a.temp // 높은 기온 순
@@ -78,8 +71,7 @@ const sortedWeatherList = computed(() => {
   return [...favorites, ...others]
 })
 
-/** 즐겨찾기 개수 */
-/** 검색어로 필터링된 결과 개수. 전체 개수 대비 몇 개가 걸렸는지 바로 보여준다. */
+/** 검색어로 필터링된 결과 개수 */
 const filteredCount = computed(() => filteredWeatherList.value.length)
 
 /** 평균 기온 (섭씨 원본 기준으로 계산 후, 화면 표시 단위에 맞춰 변환) */
@@ -162,7 +154,6 @@ function handleSelectCard(city) {
 function handleClickDetail(city) {
   router.push(`/weather/${city.id}`)
 }
-
 </script>
 
 <template>

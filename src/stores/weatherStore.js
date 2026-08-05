@@ -4,16 +4,11 @@ import { weatherMockData } from '../data/weatherMockData.js'
 import { fetchCurrentWeather, mapWeatherResponse } from '../api/weatherApi.js'
 
 /**
- * weatherStore
- * - 문제 상황: WeatherHomeView가 Axios로 받아온 "실시간" 날씨를 자기 컴포넌트
- *   안(local ref)에만 갖고 있어서, Dock(App.vue 하위, WeatherHomeView와는 형제 관계)은
- *   그 값을 전혀 몰랐다. 그래서 Dock 아이콘은 항상 예시 데이터 기준으로만 그려졌고,
- *   실제 화면에 보이는 실시간 날씨와 어긋났다.
- * - 해결: 도시 목록(cities)을 Pinia 전역 스토어로 승격시켜서, Home/Detail/Dock
- *   어디서 갱신하든 나머지 모든 곳이 같은 최신 데이터를 보게 만들었다.
- * - 로딩 자체도 이 스토어가 맡는다. 예시↔실시간 토글은 헤더에 있어서 어느 화면에서든
- *   누를 수 있는데, 불러오는 일이 특정 화면(Home)에만 있으면 다른 화면에서 토글했을 때
- *   Dock과 목록이 옛 데이터를 그대로 들고 있게 된다.
+ * 전 지역 날씨 목록과 로딩 상태.
+ *
+ * Dock과 Home은 형제 컴포넌트라 한쪽의 로컬 상태를 다른 쪽이 볼 수 없다. 그래서 목록을
+ * 스토어로 올려 어디서 갱신하든 같은 값을 보게 했다. 불러오는 일까지 여기 둔 이유도 같다 —
+ * 예시↔실시간 토글이 헤더에 있어 어느 화면에서든 눌리기 때문이다.
  */
 export const useWeatherStore = defineStore('weather', () => {
   /** state: 전 지역 날씨 목록. 처음엔 예시, 실시간 조회에 성공하면 그 값으로 교체된다. */

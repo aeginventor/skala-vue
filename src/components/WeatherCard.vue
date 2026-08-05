@@ -6,16 +6,11 @@ import { getTempLevel } from '../utils/tempLevel.js'
 import WeatherGlyph from './WeatherGlyph.vue'
 
 /**
- * WeatherCard — "갤러리 타일"로 재설계.
- * - 기존엔 텍스트 위주의 얇은 리스트 줄이었는데, 지역이 30개로 늘고 홈 화면이
- *   그리드형 갤러리로 바뀌면서 "한눈에 훑어도 정보가 읽히는 큼직한 카드"가 필요해졌다.
- * - 날씨 상태에 따라 카드 배경색 자체가 바뀐다(getWeatherTheme) — 맑음=노랑,
- *   비=파랑, 흐림=회청 등. 텍스트를 읽지 않아도 색만으로 대략적인 날씨가 느껴지게.
- */
-/**
- * city 는 스크립트에서 반복해서 쓰이므로 꺼내서 받는다. Vue 3.5부터 props 구조분해가
- * 정식 지원되어, 이렇게 꺼내 써도 반응형이 유지된다(컴파일러가 props.city 로 되돌린다).
- * isSelected/isFavorite 은 템플릿에서만 쓰므로 굳이 꺼내지 않는다.
+ * WeatherCard — 도시 하나를 보여주는 갤러리 타일.
+ * 글을 읽지 않아도 아이콘 원의 날씨색과 기온 배지만으로 대강이 읽히게 했다.
+ *
+ * city만 꺼내 받는 이유는 스크립트에서 반복해 쓰기 때문이다. Vue 3.5부터 props
+ * 구조분해가 정식 지원되어 꺼내 써도 반응형이 유지된다.
  */
 const { city } = defineProps({
   city: {

@@ -4,19 +4,11 @@ import { getWeatherCategory } from '../utils/weatherIcon.js'
 import { CLOUD, BOLT, BOLT_VIEWBOX, getCloudCount } from '../utils/glyphPaths.js'
 
 /**
- * WeatherAnimation
- * - 원래는 상세 페이지 상단에 별도의 가로 배너로 넣으려 했는데, 그렇게 하면
- *   그 아래 있는 hero 아이콘(원형 날씨 아이콘)과 같은 정보(날씨 상태)를 두 번
- *   보여주면서 세로 공간만 잡아먹고, 좁은 화면에서는 배너와 아이콘이 시각적으로
- *   겹쳐 보이는 문제가 있었다. 그래서 별도 배너를 없애고, 왼쪽 hero 아이콘 자리를
- *   더 넓혀서(76px -> 112px) 그 안에 이 애니메이션을 직접 그려 넣는 방식으로 바꿨다.
- *   아이콘 자리 하나가 "정적인 아이콘"에서 "그 자리에서 살아 움직이는 장면"으로
- *   바뀌는 셈이라 정보 중복도 없고 레이아웃도 겹치지 않는다.
- * - status 문자열(예: "튼구름")을 그대로 분기하면 API 표현이 바뀔 때마다 case를
- *   추가해야 하니, 이미 정렬/아이콘에도 쓰고 있는 getWeatherCategory()로 대분류
- *   (sun/cloud/rain/snow/storm) 하나만 받아서 그 카테고리에 맞는 장면을 그린다.
- * - 빗방울/눈송이는 각자 다른 위치(left%)·지연시간(delay)·속도(duration)를 가져야
- *   "우수수 떨어지는" 느낌이 나서, 렌더링 전에 미리 배열로 계산해 둔다.
+ * WeatherAnimation — 상세 페이지 hero 자리(112px 원) 안에서 움직이는 날씨 장면.
+ *
+ * status 문자열을 그대로 분기하면 API 표현이 바뀔 때마다 case가 늘어나므로,
+ * 정렬·아이콘과 같은 getWeatherCategory()로 대분류만 받아 장면을 고른다.
+ * 빗방울·눈송이는 위치·지연·속도가 제각각이어야 우수수 떨어져 보여서 미리 배열로 만든다.
  */
 // Vue 3.5부터 props 구조분해가 정식 지원되어, 꺼내 써도 반응형이 유지된다.
 const { status, clouds } = defineProps({

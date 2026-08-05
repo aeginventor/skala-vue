@@ -3,13 +3,8 @@ import { useConfigStore } from '../stores/configStore.js'
 
 /**
  * DataSourceToggler — 실시간 API와 예시 데이터를 오가는 스위치.
- *
- * 눈·뇌우·안개처럼 계절을 타는 날씨는 실제 API로는 확인할 방법이 없다(8월에 눈이 올 리 없다).
- * 예시 데이터에는 구현해 둔 표현이 전부 한 번씩 들어 있어서, 이 스위치를 켜면 날씨 그림
- * 6종·구름 개수 3단계·온도 5단계를 한 화면에서 모두 확인할 수 있다.
- *
- * UnitToggler와 같은 모양으로 맞춘 이유: 헤더에 나란히 놓이는 같은 성격의 스위치라
- * 서로 다르게 생기면 오히려 눈에 걸린다.
+ * 눈·뇌우처럼 계절을 타는 날씨는 실제 API로 확인할 수 없어서, 켜면 구현해 둔 표현을
+ * 한 화면에서 전부 볼 수 있다. 모양은 옆에 놓이는 UnitToggler와 맞췄다.
  */
 const configStore = useConfigStore()
 </script>

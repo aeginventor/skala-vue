@@ -15,14 +15,11 @@ import { formatLocalTime } from '../utils/formatTime.js'
 import WeatherAnimation from '../components/WeatherAnimation.vue'
 
 /**
- * WeatherDetailView
- * - 라우트 경로: /weather/:cityId
+ * WeatherDetailView — `/weather/:cityId`
  *
- * 도시 A 상세를 보다가 Dock에서 도시 B를 클릭하면 URL은 바뀌지만, 두 경로가
- * 같은 라우트 레코드(`/weather/:cityId`)를 쓰기 때문에 Vue Router는 컴포넌트
- * 인스턴스를 새로 만들지 않고 재사용한다. 데이터 로딩을 onMounted에만 두면 이미
- * 마운트된 상태에서 파라미터만 바뀌었을 때 다시 실행되지 않으므로, onMounted 대신
- * route.params.cityId를 `watch`로 감시하고 immediate:true로 최초 진입도 함께 처리한다.
+ * 도시를 바꿔도 같은 라우트 레코드라 Vue Router가 컴포넌트를 재사용한다. 그래서 로딩을
+ * onMounted에 두면 파라미터만 바뀔 때 다시 돌지 않는다. `watch` + `immediate`로 최초
+ * 진입과 도시 전환을 한 번에 처리한다.
  */
 const route = useRoute()
 const cityDetail = ref(null)
