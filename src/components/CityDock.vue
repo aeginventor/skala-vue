@@ -185,8 +185,17 @@ onBeforeUnmount(() => {
  * "전체" 버튼 + 구분선을 스크롤 컨테이너(.dock) 왼쪽 끝에 고정.
  * padding-right + 음수 margin-right 조합으로 이 래퍼의 배경이 flex gap 틈까지
  * 덮게 만들어서, 뒤로 스크롤되는 다른 도시 아이콘이 gap 사이로 비치거나
- * "전체" 버튼과 겹쳐 보이는 일이 없게 했다. 오른쪽 여백을 이전보다 넉넉하게
- * 잡아서(8px -> 14px) 확대되는 버튼이 있어도 덮을 여유를 더 뒀다.
+ * "전체" 버튼과 겹쳐 보이는 일이 없게 했다.
+ *
+ * [다듬기] 한때 오른쪽 여백을 14px까지 넉넉하게 잡고 blur 그라데이션까지
+ * 얹어봤는데, 이 앱은 블러 없는 두꺼운 잉크 테두리 + 하드 섀도우("카툰/스티커")
+ * 스타일이라 부드러운 흐림 효과가 오히려 스타일에 안 맞고 어색해 보였다.
+ * 게다가 그 넉넉한 여백 자체가 다른 구분선 주변보다 훨씬 넓은 "흰 박스"로
+ * 느껴지는 원인이었다. 애초에 여백을 넓게 잡은 이유는 드래그 중 hover 확대
+ * 효과가 삐져나오는 걸 덮기 위해서였는데, 그 확대 효과 자체를 드래그 중엔
+ * 꺼버렸으니(.dock--dragging) 더 이상 넉넉한 여백이 필요 없다. blur를 걷어내고
+ * 여백을 다른 구분선과 비슷한 수준(8px)으로 줄여서, 도시 버튼들이 "전체"
+ * 경계 바로 옆까지 딱 붙어 지나가는 깔끔한 느낌으로 바꿨다.
  */
 .dock-pinned {
   position: sticky;
@@ -197,31 +206,8 @@ onBeforeUnmount(() => {
   align-items: stretch;
   gap: 6px;
   background: var(--color-surface);
-  padding: 0 14px 0 16px;
+  padding: 0 8px 0 16px;
   margin-right: -8px;
-}
-
-/*
- * .dock-pinned 바로 뒤(오른쪽)에 옅어지는 페이드를 깔아서, 스크롤되는 도시
- * 버튼들이 각지게 뚝 끊기는 대신 배경 속으로 스며들듯 지나가게 한다.
- * .dock-pinned 자신은 sticky라 스크롤해도 화면에 그대로 붙어있으므로, 이
- * 가상 요소도 같이 고정된 채로 남아 계속 같은 자리에서 페이드 역할을 한다.
- * - [다듬기] 처음엔 22px 폭의 완전히 각진 사각형 그라데이션이라, 스크롤을
- *   시작하기도 전부터(정지 상태에서도) 서울 버튼 왼쪽이 큼직하게 가려 보였다.
- *   폭을 14px로 줄이고, 위아래로 살짝(-6px) 더 크게 잡은 뒤 blur를 줘서 사각형
- *   윤곽 자체가 안 보이게 했다 — 가로 경계뿐 아니라 위/아래 경계도 부드럽게
- *   풀어지고, 정지 상태에서 가려지는 영역도 훨씬 얇아졌다.
- */
-.dock-pinned::after {
-  content: '';
-  position: absolute;
-  top: -6px;
-  bottom: -6px;
-  right: -14px;
-  width: 14px;
-  background: linear-gradient(to right, var(--color-surface), transparent);
-  filter: blur(2px);
-  pointer-events: none;
 }
 
 .dock-divider {
